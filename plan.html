@@ -1,0 +1,510 @@
+<title>Mini-Windows Roadmap</title>
+<style>
+:root{
+  --bg:#f5f4f0;
+  --surface:#ffffff;
+  --surface-2:#ebe9e2;
+  --ink:#1c1d1f;
+  --ink-dim:#5a5c62;
+  --line:#d9d6cc;
+  --accent:#2b5fd9;
+  --accent-ink:#0f2c73;
+  --amber:#b5730b;
+  --green:#1f7a4d;
+  --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
+  --sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14151a;
+    --surface:#1b1c22;
+    --surface-2:#22232b;
+    --ink:#e9e8e4;
+    --ink-dim:#9a9ba3;
+    --line:#31323b;
+    --accent:#6f94f0;
+    --accent-ink:#c7d5fb;
+    --amber:#e0a545;
+    --green:#59c78c;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14151a;
+  --surface:#1b1c22;
+  --surface-2:#22232b;
+  --ink:#e9e8e4;
+  --ink-dim:#9a9ba3;
+  --line:#31323b;
+  --accent:#6f94f0;
+  --accent-ink:#c7d5fb;
+  --amber:#e0a545;
+  --green:#59c78c;
+}
+
+*{box-sizing:border-box;}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--sans);
+  margin:0;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{ background:var(--accent); color:var(--surface); }
+
+.wrap{
+  max-width:920px;
+  margin:0 auto;
+  padding:64px 24px 120px;
+}
+
+.eyebrow{
+  font-family:var(--mono);
+  font-size:0.72rem;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--accent);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:18px;
+}
+.eyebrow::before{
+  content:"";
+  width:8px; height:8px;
+  background:var(--accent);
+  display:inline-block;
+}
+
+h1{
+  font-size:clamp(1.9rem, 4vw, 2.6rem);
+  font-weight:700;
+  letter-spacing:-0.01em;
+  text-wrap:balance;
+  margin:0 0 12px;
+}
+.sub{
+  color:var(--ink-dim);
+  font-size:1.05rem;
+  max-width:62ch;
+  margin:0 0 40px;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(140px,1fr));
+  gap:1px;
+  background:var(--line);
+  border:1px solid var(--line);
+  margin-bottom:56px;
+}
+.stat{
+  background:var(--surface);
+  padding:16px 18px;
+}
+.stat .n{
+  font-family:var(--mono);
+  font-size:1.4rem;
+  font-weight:700;
+  color:var(--accent-ink);
+}
+.stat .l{
+  font-size:0.78rem;
+  color:var(--ink-dim);
+  margin-top:2px;
+}
+
+section.phase{
+  border-top:1px solid var(--line);
+  padding:40px 0;
+}
+section.phase:first-of-type{ border-top:none; }
+
+.phase-head{
+  display:flex;
+  align-items:baseline;
+  gap:16px;
+  margin-bottom:6px;
+}
+.phase-num{
+  font-family:var(--mono);
+  font-size:0.9rem;
+  color:var(--ink-dim);
+}
+.phase-title{
+  font-size:1.35rem;
+  font-weight:700;
+  letter-spacing:-0.01em;
+}
+.phase-week{
+  margin-left:auto;
+  font-family:var(--mono);
+  font-size:0.75rem;
+  color:var(--ink-dim);
+  background:var(--surface-2);
+  padding:4px 10px;
+  border:1px solid var(--line);
+  white-space:nowrap;
+}
+.phase-goal{
+  color:var(--ink-dim);
+  max-width:66ch;
+  margin:0 0 22px;
+}
+
+.grid2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:24px;
+}
+@media (max-width:700px){ .grid2{grid-template-columns:1fr;} }
+
+.card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  padding:18px 20px;
+}
+.card h3{
+  font-size:0.78rem;
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  font-family:var(--mono);
+  color:var(--ink-dim);
+  margin:0 0 12px;
+}
+ul.check{
+  list-style:none;
+  margin:0; padding:0;
+  display:flex; flex-direction:column; gap:9px;
+}
+ul.check li{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  font-size:0.94rem;
+}
+ul.check li::before{
+  content:"";
+  flex:0 0 auto;
+  width:14px; height:14px;
+  margin-top:3px;
+  border:1.5px solid var(--ink-dim);
+}
+code, .code{
+  font-family:var(--mono);
+  font-size:0.88em;
+  background:var(--surface-2);
+  padding:0.1em 0.4em;
+  border:1px solid var(--line);
+}
+
+.pillars{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+  margin:44px 0 56px;
+}
+@media (max-width:700px){ .pillars{grid-template-columns:1fr 1fr;} }
+.pillar{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-top:3px solid var(--accent);
+  padding:16px 16px 18px;
+}
+.pillar .t{
+  font-family:var(--mono);
+  font-weight:700;
+  font-size:0.88rem;
+  margin-bottom:6px;
+}
+.pillar .d{
+  font-size:0.82rem;
+  color:var(--ink-dim);
+  line-height:1.5;
+}
+
+.risks{
+  margin-top:16px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.risk{
+  display:grid;
+  grid-template-columns:180px 1fr;
+  gap:14px;
+  font-size:0.92rem;
+  padding:10px 0;
+  border-top:1px solid var(--line);
+}
+.risk:first-child{ border-top:none; }
+.risk .tag{
+  font-family:var(--mono);
+  font-size:0.72rem;
+  color:var(--amber);
+  align-self:start;
+  padding-top:2px;
+}
+
+.deliv{
+  margin-top:56px;
+  background:var(--surface-2);
+  border:1px solid var(--line);
+  padding:24px 26px;
+}
+.deliv h2{
+  font-size:1.05rem;
+  margin:0 0 14px;
+  font-family:var(--mono);
+}
+.deliv ol{
+  margin:0; padding-left:20px;
+  display:flex; flex-direction:column; gap:6px;
+}
+.deliv ol li::marker{
+  font-family:var(--mono);
+  color:var(--accent-ink);
+}
+
+footer{
+  margin-top:60px;
+  color:var(--ink-dim);
+  font-size:0.8rem;
+  font-family:var(--mono);
+  border-top:1px solid var(--line);
+  padding-top:18px;
+}
+</style>
+
+<div class="wrap">
+
+  <div class="eyebrow">PLAN DE TRABAJO · PROG. II</div>
+  <h1>Mini-Windows &amp; INSTA+</h1>
+  <p class="sub">Ruta sugerida para construir el simulador de SO y la red social integrada. Orden pensado para que cada fase deje una base que la siguiente reutiliza — no es obligatorio seguirla al pie de la letra, es una guía razonable.</p>
+
+  <div class="stats">
+    <div class="stat"><div class="n">6</div><div class="l">fases</div></div>
+    <div class="stat"><div class="n">4</div><div class="l">pilares técnicos</div></div>
+    <div class="stat"><div class="n">7</div><div class="l">archivos .ins/.sop</div></div>
+    <div class="stat"><div class="n">3+</div><div class="l">excepciones propias</div></div>
+  </div>
+
+  <div class="pillars">
+    <div class="pillar"><div class="t">Binarios</div><div class="d">Serializable + ObjectStream/RandomAccessFile. Nunca texto plano.</div></div>
+    <div class="pillar"><div class="t">Hilos</div><div class="d">Música, organizador, notificaciones Inbox. Lock en escrituras compartidas.</div></div>
+    <div class="pillar"><div class="t">Sockets</div><div class="d">Servidor central dueño de los .ins; clientes piden, nunca leen directo.</div></div>
+    <div class="pillar"><div class="t">Lista enlazada</div><div class="d">Nodo + ListaEnlazada propia — timeline, followers, resultados búsqueda.</div></div>
+  </div>
+
+  <section class="phase">
+    <div class="phase-head">
+      <span class="phase-num">FASE 0</span>
+      <span class="phase-title">Cimientos</span>
+      <span class="phase-week">antes de cualquier UI</span>
+    </div>
+    <p class="phase-goal">Construir lo que todo lo demás va a usar: modelos serializables, la lista enlazada propia, utilitarios de I/O y las excepciones. Si esto está sólido, el resto es ensamblaje.</p>
+    <div class="grid2">
+      <div class="card">
+        <h3>Modelos y estructuras</h3>
+        <ul class="check">
+          <li>Clases <code>Usuario</code>, <code>Publicacion</code>, <code>Mensaje</code>, <code>Sticker</code> — <code>Serializable</code></li>
+          <li><code>Nodo&lt;T&gt;</code> y <code>ListaEnlazada&lt;T&gt;</code> propias (add, remove, recorrer)</li>
+          <li>Excepciones: <code>UsernameDuplicadoException</code>, <code>CuentaDesactivadaException</code>, <code>ArchivoCorruptoException</code></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Persistencia base</h3>
+        <ul class="check">
+          <li>Clase utilitaria de lectura/escritura binaria centralizada</li>
+          <li>Definir extensión propia <code>.sop</code> / <code>.ins</code> por archivo</li>
+          <li>Crear estructura <code>Z:\</code> + admin por defecto al primer arranque</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="phase">
+    <div class="phase-head">
+      <span class="phase-num">FASE 1</span>
+      <span class="phase-title">Mini-Windows: usuarios y archivos</span>
+      <span class="phase-week"></span>
+    </div>
+    <p class="phase-goal">El núcleo del "sistema operativo": login multiusuario y el explorador de archivos sobre el que corre todo lo demás.</p>
+    <div class="grid2">
+      <div class="card">
+        <h3>Multiusuario</h3>
+        <ul class="check">
+          <li>Alta de usuario → crea <code>Z:\usuario</code> + 3 carpetas (Documentos, Música, Imágenes)</li>
+          <li>Login: admin ve todo, estándar solo su carpeta</li>
+          <li>Barra administradora principal (acceso a las 5 herramientas)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Explorador (JTree)</h3>
+        <ul class="check">
+          <li>Árbol de carpetas desde la raíz del usuario</li>
+          <li>Función "Organizar" (clasifica por tipo en subcarpetas) <span style="color:var(--amber);font-family:var(--mono);font-size:0.7rem;">HILO</span></li>
+          <li>Ordenar por nombre/fecha/tipo/tamaño</li>
+          <li>Renombrar, crear, copiar, pegar</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="phase">
+    <div class="phase-head">
+      <span class="phase-num">FASE 2</span>
+      <span class="phase-title">Herramientas de escritorio</span>
+      <span class="phase-week"></span>
+    </div>
+    <p class="phase-goal">Las cuatro apps del sistema. Independientes entre sí — buen punto para paralelizar si trabajan en equipo.</p>
+    <div class="grid2">
+      <div class="card">
+        <h3>Editor de texto</h3>
+        <ul class="check">
+          <li>Crear/editar <code>.txt</code> con formato (color, fuente, tamaño)</li>
+          <li>Formato persiste al reabrir el archivo</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Visor de imágenes</h3>
+        <ul class="check">
+          <li>Recorrer colección con Siguiente/Anterior</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Consola de comandos</h3>
+        <ul class="check">
+          <li><code>mkdir</code>, <code>rm</code>, <code>cd</code>, <code>cd..</code>, <code>dir</code>, <code>date</code>, <code>time</code></li>
+          <li>Muestra siempre la carpeta actual</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Reproductor de música <span style="color:var(--amber);font-family:var(--mono);font-size:0.7rem;">HILO</span></h3>
+        <ul class="check">
+          <li>Play/Pause/Stop en hilo propio (no congela UI)</li>
+          <li>Lista de canciones, carátula, descripción</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="phase">
+    <div class="phase-head">
+      <span class="phase-num">FASE 3</span>
+      <span class="phase-title">INSTA+: cuentas y timeline</span>
+      <span class="phase-week"></span>
+    </div>
+    <p class="phase-goal">La red social arranca donde terminó Fase 0: mismos binarios, misma lista enlazada, ahora con su propio login.</p>
+    <div class="grid2">
+      <div class="card">
+        <h3>Cuenta</h3>
+        <ul class="check">
+          <li>Login / Crear cuenta → alimenta <code>users.ins</code></li>
+          <li>Al registrar: carpeta <code>INSTA_RAIZ/username</code> + <code>/imagenes</code>, <code>/folders_personales</code>, <code>/stickers_personales</code></li>
+          <li>3 cuentas de ejemplo con contenido (noticias, moda/deporte, entretenimiento)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Publicar + Timeline</h3>
+        <ul class="check">
+          <li>Cargar imagen: carpeta, descripción (220c), hashtags, @menciones</li>
+          <li>Guarda en <code>insta.ins</code> (máx 140c contenido)</li>
+          <li>Timeline propio + seguidos, más reciente primero, <b>lista enlazada</b></li>
+          <li>Sección Interacciones: menciones a mí, sin duplicados</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Perfil</h3>
+        <ul class="check">
+          <li>Datos completos + contadores followers/following/publicaciones</li>
+          <li>Editar perfil, activar/desactivar cuenta (con confirmación)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Buscar</h3>
+        <ul class="check">
+          <li>Buscar Profile: coincidencia parcial, botón Seguir/Dejar de seguir</li>
+          <li>Buscar Hashtag: sin duplicados, orden no relevante</li>
+          <li>followers.ins / following.ins como <b>lista enlazada</b></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="phase">
+    <div class="phase-head">
+      <span class="phase-num">FASE 4</span>
+      <span class="phase-title">Inbox y stickers</span>
+      <span class="phase-week"></span>
+    </div>
+    <p class="phase-goal">Mensajería directa — la parte con más estado (leído/no leído, notificaciones en segundo plano).</p>
+    <div class="grid2">
+      <div class="card">
+        <h3>Inbox <span style="color:var(--amber);font-family:var(--mono);font-size:0.7rem;">HILO</span></h3>
+        <ul class="check">
+          <li>Enviar texto, ver historial, marcar leído, eliminar conversación</li>
+          <li>Hilo en 2do plano que revisa <code>inbox.ins</code> periódicamente → notificación</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Stickers</h3>
+        <ul class="check">
+          <li>5 stickers default (Feliz, Triste, Corazón, Risa, Aplauso) desde <code>stickers_globales</code></li>
+          <li>Importar propio (.png/.jpg) → <code>/stickers_personales</code> + registro en <code>stickers.ins</code></li>
+          <li>Enviar sticker dentro del chat → <code>inbox.ins</code> tipo STICKER</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="phase">
+    <div class="phase-head">
+      <span class="phase-num">FASE 5</span>
+      <span class="phase-title">Sockets + cierre</span>
+      <span class="phase-week">al final, a propósito</span>
+    </div>
+    <p class="phase-goal">Se deja al final porque reestructura el acceso a datos: una vez todo funciona en local, se mueve la lectura/escritura de <code>.ins</code> al servidor.</p>
+    <div class="grid2">
+      <div class="card">
+        <h3>Servidor</h3>
+        <ul class="check">
+          <li><code>ServerSocket</code> en puerto fijo, un hilo por cliente conectado</li>
+          <li>Único dueño de la lectura/escritura de los <code>.ins</code></li>
+          <li>Protocolo simple: <code>LOGIN;user;pass</code>, <code>POST;contenido</code>, <code>FOLLOW;user</code></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Cliente + pulido final</h3>
+        <ul class="check">
+          <li>INSTA+ habla con el servidor vía <code>Socket</code>, nunca toca archivos directo</li>
+          <li>Revisar diseño visual estilo SO real, vista única sin pop-ups</li>
+          <li>Checklist de requisitos técnicos (sección siguiente) al 100%</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="deliv">
+    <h2>// checklist de entrega — no negociable</h2>
+    <ol>
+      <li>Todo el almacenamiento persistente en binario, cero texto plano</li>
+      <li>Hilos en: música, organizador de archivos, notificaciones Inbox</li>
+      <li>Arquitectura cliente-servidor con sockets funcionando en red</li>
+      <li><code>Nodo</code> + <code>ListaEnlazada</code> propia usada en timeline, followers/following, búsquedas</li>
+      <li>Clase(s) utilitarias centralizadas para leer/escribir cada <code>.ins</code></li>
+      <li>Extensiones propias de archivo (ej. <code>usuarios.sop</code>)</li>
+      <li>Mínimo 3 excepciones personalizadas, usadas de verdad (no decorativas)</li>
+      <li>Sincronización (<code>synchronized</code> / <code>Lock</code>) en escrituras concurrentes a un mismo <code>.ins</code></li>
+    </ol>
+  </div>
+
+  <div class="risks">
+    <div class="risk"><span class="tag">RIESGO</span><span>Dejar sockets para el final sin dejar tiempo — bloquea toda la nota si no se integra.</span></div>
+    <div class="risk"><span class="tag">RIESGO</span><span>Implementar lista enlazada como wrapper de ArrayList — el enunciado pide clase propia explícita, revisan esto.</span></div>
+    <div class="risk"><span class="tag">RIESGO</span><span>Dos hilos escribiendo <code>followers.ins</code> sin lock → archivo corrupto. Probar con multiusuario simultáneo antes de entregar.</span></div>
+  </div>
+
+  <footer>mini-windows / insta+ — plan de referencia, ajustar según avance real</footer>
+
+</div>
