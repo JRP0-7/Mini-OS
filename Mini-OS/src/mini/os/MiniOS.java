@@ -1,20 +1,19 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
- */
 package mini.os;
 
-/**
- *
- * @author josep
- */
+import mini.os.core.GestorUser;
+import mini.os.core.Sistema;
+import mini.os.error.UsuarioDuplicadoException;
+
 public class MiniOS {
 
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String[] args) {
-        // TODO code application logic here
+        Sistema.iniciar();
+        try{
+            GestorUser.crearUser("Luis", "1234");
+        }
+        catch(UsuarioDuplicadoException e){
+            System.out.println(e.getMessage());
+        }
     }
-    
+
 }
