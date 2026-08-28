@@ -1,7 +1,5 @@
 package mini.os.model;
 
-import java.io.Serializable;
-
 public class SystemUser extends Users{
     private boolean admin;
 
