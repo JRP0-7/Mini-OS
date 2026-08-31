@@ -2,6 +2,7 @@ package mini.os.model;
 
 import java.io.Serializable;
 
+// Un nodo simple para la lista enlazada
 public class Nodo<T> implements Serializable{
     private T info;
     private Nodo<T> next;

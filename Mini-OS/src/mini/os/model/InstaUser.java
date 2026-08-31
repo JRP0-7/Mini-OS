@@ -2,6 +2,7 @@ package mini.os.model;
 
 import java.util.Date;
 
+// Usuario con perfil tipo "Instagram" con más datos personales y seguidores
 public class InstaUser extends Users{
     private String nombre;
     private char genero;

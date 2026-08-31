@@ -2,6 +2,7 @@ package mini.os.model;
 
 import java.io.Serializable;
 
+// Clase base para cualquier tipo de usuario del sistema
 public abstract class Users implements Serializable {
     private String user;
     private String password;

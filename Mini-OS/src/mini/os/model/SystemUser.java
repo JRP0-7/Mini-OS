@@ -1,5 +1,6 @@
 package mini.os.model;
 
+// Usuario básico del sistema (como el admin)
 public class SystemUser extends Users{
     private boolean admin;
 
