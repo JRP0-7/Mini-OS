@@ -9,7 +9,9 @@ import mini.os.io.Autentificacion;
 import mini.os.model.ListaEnlazada;
 import mini.os.model.SystemUser;
 
+// Esta clase se encarga de crear usuarios y manejar el login
 public class GestorUser {
+    // Crea un usuario nuevo, le hace sus carpetas y guarda los datos
     public static void crearUser(String user, String pass) throws UsuarioDuplicadoException, NoSuchAlgorithmException {
         ListaEnlazada<String> lista = ArchivoUtil.leer(Sistema.ROOT + "/users.xr");
         if (lista.contiene(user)) {
@@ -31,6 +33,7 @@ public class GestorUser {
         ArchivoUtil.guardar(lista, Sistema.ROOT + "/users.xr");
     }
 
+    // Verifica si el usuario y la contraseña son correctos para entrar
     public static SystemUser login(String user, String pass) throws NoSuchAlgorithmException {
         File folder = new File(Sistema.ROOT + "/" + user);
         

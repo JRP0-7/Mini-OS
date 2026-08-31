@@ -1,13 +1,17 @@
 package mini.os.core;
 
 import java.io.File;
+import java.security.NoSuchAlgorithmException;
 
 import mini.os.io.ArchivoUtil;
+import mini.os.io.Autentificacion;
 import mini.os.model.ListaEnlazada;
 import mini.os.model.SystemUser;
 
+// Configuración general del sistema y la carpeta raíz
 public class Sistema {
     
+    // Mira dónde estamos ejecutando el programa para poner la ruta bien
     public static String pathOrigen(){
         String cd = System.getProperty("user.dir");
         if(cd.endsWith("Mini-OS")){
@@ -18,7 +22,10 @@ public class Sistema {
         }
     }
     
+    // La carpeta raíz donde se guarda todo
     public static final String ROOT = pathOrigen();
+
+    // Crea las carpetas básicas y el admin si es la primera vez que corre
     public static void iniciar(){
         File raiz = new File(ROOT);
         if(!raiz.exists()){
@@ -31,7 +38,12 @@ public class Sistema {
             new File(adminF, "Documents").mkdirs();
             new File(adminF, "Music").mkdirs();
             new File(adminF, "Images").mkdirs();
-            SystemUser su= new SystemUser("admin", "admin", true);
+            SystemUser su=null;
+            try {
+                su = new SystemUser("admin", Autentificacion.hash("admin"), true);
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            }
             ArchivoUtil.guardar(su, adminF.getPath() + "/admin.xr");
         }
 
