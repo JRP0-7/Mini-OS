@@ -5,7 +5,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 import java.nio.charset.StandardCharsets;
 
+// Maneja la seguridad de las contraseñas
 public class Autentificacion {
+    // Convierte la contraseña en un hash SHA-256 para que no esté en texto plano
     public static String hash(String pass) throws NoSuchAlgorithmException{
         try {
             MessageDigest dig = MessageDigest.getInstance("SHA-256");
