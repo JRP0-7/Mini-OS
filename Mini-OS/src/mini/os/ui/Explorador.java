@@ -9,8 +9,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.jar.JarEntry;
-
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -23,7 +21,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
 import mini.os.core.NodoArchivos;
-import mini.os.core.Sistema;
 
 // Ventana para navegar por las carpetas y archivos del sistema
 public class Explorador extends JFrame {
@@ -34,6 +31,7 @@ public class Explorador extends JFrame {
     public Explorador(File raiz) {
         setTitle("Explorador de Archivos");
         setSize(800, 500);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         // Definimos las extensiones de cada categoría
         categorias.put("Images", new String[] { "jpg", "png", "jpeg" });

@@ -6,8 +6,10 @@ import java.io.File;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 
+import mini.os.console.Consola;
 import mini.os.core.Sistema;
 import mini.os.model.SystemUser;
+import mini.os.ui.VisorImagenes;
 
 // El escritorio principal que ve el usuario después de loguearse
 public class Escritorio extends JFrame{
@@ -28,8 +30,22 @@ public class Escritorio extends JFrame{
 
         add(btnExplorador);
         add(new JButton("Editor de Texto"));
-        add(new JButton("Visor de Imagenes"));
-        add(new JButton("Consola"));
+
+        JButton btnVisualizador = new JButton("Visor de Imagenes");
+        btnVisualizador.addActionListener(e->{
+            File FolderUser = usuario.isAdmin() ? new File(Sistema.ROOT) : new File(Sistema.ROOT + "/" + usuario.getUser()+ "/Images");
+            VisorImagenes view = new VisorImagenes(FolderUser);
+            view.setVisible(true);
+        });
+
+        add(btnVisualizador);
+
+        JButton btnConsola = new JButton("Consola");
+        btnConsola.addActionListener(e->{
+            File FolderUser = usuario.isAdmin() ? new File(Sistema.ROOT) : new File(Sistema.ROOT + "/" + usuario.getUser() );
+            Consola.abrir(FolderUser);
+        });
+        add(btnConsola);
         add(new JButton("Reproductor"));
     }
 }
