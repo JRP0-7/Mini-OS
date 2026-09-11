@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -20,18 +21,21 @@ import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
+import javazoom.jlgui.basicplayer.BasicPlayerException;
+import mini.os.audio.ReproductorMusica;
 import mini.os.core.NodoArchivos;
+import mini.os.docs.EditorTexto;
 
 // Ventana para navegar por las carpetas y archivos del sistema
-public class Explorador extends JFrame {
+public class Explorador extends JInternalFrame {
     // Aquí guardamos qué extensiones van en cada carpeta (Images, Docs, etc)
     private Map<String, String[]> categorias = new HashMap<>();
     private File archivoCopiado;
 
     public Explorador(File raiz) {
-        setTitle("Explorador de Archivos");
-        setSize(800, 500);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        super("Explorador de Archivos", true, true, true, true);
+        setSize(1100, 500);
+        setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
 
         // Definimos las extensiones de cada categoría
         categorias.put("Images", new String[] { "jpg", "png", "jpeg" });
@@ -75,7 +79,8 @@ public class Explorador extends JFrame {
             t.start();
         });
 
-        // Botón para mover automáticamente los archivos a sus carpetas según la extensión
+        // Botón para mover automáticamente los archivos a sus carpetas según la
+        // extensión
         JButton surtir = new JButton("Organizar Archivos");
         surtir.addActionListener(e -> {
             Thread t = new Thread(() -> {
@@ -114,7 +119,8 @@ public class Explorador extends JFrame {
                 return;
             }
 
-            // Guardamos el archivo en la variable archivoCopiado para usarlo después en el "Pegar"
+            // Guardamos el archivo en la variable archivoCopiado para usarlo después en el
+            // "Pegar"
             NodoArchivos nNodo = (NodoArchivos) seleccion.getUserObject();
             archivoCopiado = nNodo.getArchivo();
 
@@ -143,7 +149,7 @@ public class Explorador extends JFrame {
             }
             try {
                 File hijos[] = destino.listFiles();
-                boolean existe=false;
+                boolean existe = false;
                 if (hijos != null) {
                     // Chequeamos si ya hay un archivo con el mismo nombre en la carpeta destino
                     for (File hijo : hijos) {
@@ -174,18 +180,196 @@ public class Explorador extends JFrame {
 
         });
 
+        JButton verImage = new JButton("Abrir en visualizador");
+        verImage.addActionListener(e -> {
+            DefaultMutableTreeNode seleccion = (DefaultMutableTreeNode) arbol.getLastSelectedPathComponent();
+            if (seleccion == null) {
+                return;
+            } else {
+                NodoArchivos na = (NodoArchivos) seleccion.getUserObject();
+                File archivo = na.getArchivo();
+                String nombre = archivo.getName().toLowerCase();
+                if (!nombre.endsWith(".jpg") && !nombre.endsWith(".jpeg") && !nombre.endsWith(".png")) {
+                    JOptionPane.showMessageDialog(this, "No se pudo abrir el archivo", "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                VisorImagenes v = new VisorImagenes(archivo.getParentFile());
+                v.genImagen(archivo);
+                v.setVisible(true);
+
+            }
+        });
+
+        JButton verDoc = new JButton("Abrir en editor");
+        verDoc.addActionListener(e -> {
+            DefaultMutableTreeNode seleccion = (DefaultMutableTreeNode) arbol.getLastSelectedPathComponent();
+            if (seleccion == null) {
+                return;
+            } else {
+                NodoArchivos na = (NodoArchivos) seleccion.getUserObject();
+                File archivo = na.getArchivo();
+                if (!archivo.getName().toLowerCase().endsWith(".edt")) {
+                    JOptionPane.showMessageDialog(this, "No se pudo abrir el archivo", "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                } else {
+                    EditorTexto ed = new EditorTexto(archivo.getParentFile());
+                    ed.abrirDirecto(archivo);
+                    ed.setVisible(true);
+                }
+
+            }
+        });
+
+        JButton verMusica = new JButton("Abrir en reproductor");
+        verMusica.addActionListener(e -> {
+            DefaultMutableTreeNode seleccion = (DefaultMutableTreeNode) arbol.getLastSelectedPathComponent();
+            if (seleccion == null) {
+                return;
+            }
+            NodoArchivos na = (NodoArchivos) seleccion.getUserObject();
+            File archivo = na.getArchivo();
+            if (!archivo.getName().toLowerCase().endsWith(".mp3")) {
+                JOptionPane.showMessageDialog(this, "No se pudo abrir el archivo", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            try {
+                ReproductorMusica rep = new ReproductorMusica(archivo.getParentFile());
+                rep.setVisible(true);
+            } catch (IOException | BasicPlayerException ex) {
+                ex.printStackTrace();
+            }
+        });
+
         JButton recargar = new JButton("Recargar");
-        recargar.addActionListener(e->{ recargarArbol(arbol, raiz);});
+        recargar.addActionListener(e -> {
+            recargarArbol(arbol, raiz);
+        });
+
+        JButton btnNCarpeta = new JButton("Nueva Carpeta");
+        btnNCarpeta.addActionListener(e -> {
+            DefaultMutableTreeNode seleccion = (DefaultMutableTreeNode) arbol.getLastSelectedPathComponent();
+            if (seleccion == null) {
+                return;
+            }
+            NodoArchivos na = (NodoArchivos) seleccion.getUserObject();
+            File archivo = na.getArchivo();
+            if (archivo == null || !archivo.isDirectory()) {
+                JOptionPane.showMessageDialog(this, "Seleccione una carpeta donde generar la nueva carpeta", "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            String nombre = JOptionPane.showInputDialog(this, "Escriba el nombre de la nueva carpeta");
+            if (nombre == null || nombre.isEmpty()) {
+                return;
+            }
+
+            new File(archivo, nombre).mkdir();
+            recargarArbol(arbol, raiz);
+        });
+
+        JButton btnNArchivo = new JButton("Nuevo Archivo");
+        btnNArchivo.addActionListener(e -> {
+            DefaultMutableTreeNode seleccion = (DefaultMutableTreeNode) arbol.getLastSelectedPathComponent();
+            if (seleccion == null) {
+                return;
+            }
+            NodoArchivos na = (NodoArchivos) seleccion.getUserObject();
+            File archivo = na.getArchivo();
+            if (archivo == null || !archivo.isDirectory()) {
+                JOptionPane.showMessageDialog(this, "Seleccione una carpeta donde generar el nuevo archivo", "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            String nombre = JOptionPane.showInputDialog(this, "Escriba el nombre del nuevo archivo");
+            if (nombre == null || nombre.isEmpty()) {
+                return;
+            }
+
+            
+            try {
+                new File(archivo, nombre).createNewFile();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+            recargarArbol(arbol, raiz);
+        });
+
+        JButton btnEliminar = new JButton("Eliminar");
+        btnEliminar.addActionListener(e -> {
+            DefaultMutableTreeNode seleccion = (DefaultMutableTreeNode) arbol.getLastSelectedPathComponent();
+            if (seleccion == null) {
+                return;
+            }
+            NodoArchivos na = (NodoArchivos) seleccion.getUserObject();
+            File archivo = na.getArchivo();
+            if (archivo.equals(raiz)) {
+                JOptionPane.showMessageDialog(this, "No se puede borrar la raiz del sistema", "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            int res = JOptionPane.showConfirmDialog(btnNArchivo, "Esta seguro de que desea eliminar el archivo " + archivo.getName()+ "?");
+            if(res!=JOptionPane.YES_OPTION){
+                return;
+            }
+
+            if(archivo.isFile())
+                archivo.delete();
+
+
+            if(archivo.isDirectory()){
+                borrar(archivo);
+            }
+            recargarArbol(arbol, raiz);
+        });
 
         JScrollPane lista = new JScrollPane(arbol);
 
         JPanel pBotones = new JPanel();
+        pBotones.add(btnNArchivo);
+        pBotones.add(btnNCarpeta);
+        pBotones.add(btnEliminar);
         pBotones.add(ordenar);
         pBotones.add(surtir);
         pBotones.add(renombrar);
         pBotones.add(copiar);
         pBotones.add(pegar);
         pBotones.add(recargar);
+        pBotones.add(verImage);
+        pBotones.add(verDoc);
+        pBotones.add(verMusica);
+
+        // Solo mostramos el boton que corresponde a la extension del archivo
+        // seleccionado
+        copiar.setVisible(false);
+        verImage.setVisible(false);
+        verDoc.setVisible(false);
+        verMusica.setVisible(false);
+        arbol.addTreeSelectionListener(e -> {
+            verImage.setVisible(false);
+            verDoc.setVisible(false);
+            verMusica.setVisible(false);
+            copiar.setVisible(false);
+            DefaultMutableTreeNode select = (DefaultMutableTreeNode) arbol.getLastSelectedPathComponent();
+            if (select == null) {
+                copiar.setVisible(false);
+                return;
+            }
+            copiar.setVisible(true);
+            NodoArchivos na = (NodoArchivos) select.getUserObject();
+            String nombre = na.getArchivo().getName().toLowerCase();
+            if (nombre.endsWith(".jpg") || nombre.endsWith(".jpeg") || nombre.endsWith(".png")) {
+                verImage.setVisible(true);
+            } else if (nombre.endsWith(".edt")) {
+                verDoc.setVisible(true);
+            } else if (nombre.endsWith(".mp3")) {
+                verMusica.setVisible(true);
+            }
+            pBotones.revalidate();
+            pBotones.repaint();
+        });
 
         add(pBotones, BorderLayout.NORTH);
         add(lista, BorderLayout.CENTER);
@@ -232,7 +416,8 @@ public class Explorador extends JFrame {
 
     // Este método recorre todo y mueve los archivos a sus carpetas correspondientes
     private void organizar(File folder) {
-        // Si ya estamos dentro de una carpeta de categoría, no organizamos más aquí para no hacer lío
+        // Si ya estamos dentro de una carpeta de categoría, no organizamos más aquí
+        // para no hacer lío
         for (String valor : categorias.keySet()) {
             if (valor.equalsIgnoreCase(folder.getName()))
                 return;
@@ -277,12 +462,25 @@ public class Explorador extends JFrame {
         return null;
     }
 
-    // Refresca el árbol visual para que se vean los cambios (como cuando mueves o renombras)
+    // Refresca el árbol visual para que se vean los cambios (como cuando mueves o
+    // renombras)
     private void recargarArbol(JTree arbol, File raiz) {
         DefaultMutableTreeNode nNodo = crearNodo(raiz, 0);
         SwingUtilities.invokeLater(() -> {
             arbol.setModel(new DefaultTreeModel(nNodo));
         });
+    }
+
+    private void borrar(File f){
+        if (f.isDirectory()) {
+            File hijos[] = f.listFiles();
+            if (hijos != null) {
+                for (File child : hijos) {
+                    borrar(child);
+                }
+            }
+        }
+        f.delete();
     }
 
 }

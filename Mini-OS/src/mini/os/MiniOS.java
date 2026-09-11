@@ -10,9 +10,9 @@ public class MiniOS {
         Sistema.iniciar();
 
         try {
-            GestorUser.crearUser("alex", "1234");
+            GestorUser.crearUser("alex", "1234", false);
         } catch (Exception e) {
-            e.printStackTrace();
+            // e.printStackTrace();
         }
 
         VentanaMain ventana = new VentanaMain();

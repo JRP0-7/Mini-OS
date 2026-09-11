@@ -11,12 +11,12 @@ public class Consola {
     private static boolean modoAppend = false;
     private static StringBuilder buffer = new StringBuilder();
 
-    public static void abrir(File raizUser) {
+    public static ConsoleGUI abrir(File raizUser) {
         ConsoleGUI gui = new ConsoleGUI();
         ManejoFile archivos = new ManejoFile(raizUser);
         gui.setRutaActual(archivos.ubicacionActual());
         gui.setComandoListener(comando -> procesarComando(comando, gui, archivos));
-        gui.setVisible(true);
+        return gui;
     }
 
     private static void procesarComando(String entrada, ConsoleGUI gui,

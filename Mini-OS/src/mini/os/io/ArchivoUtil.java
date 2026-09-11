@@ -20,6 +20,7 @@ public class ArchivoUtil {
     // Lee un objeto desde un archivo y lo devuelve
     public static <T> T leer(String ruta){
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(ruta))){
+            @SuppressWarnings("unchecked") //supresor de advertencia, revisar despues
             T objeto = (T) ois.readObject();
             return objeto;
         }

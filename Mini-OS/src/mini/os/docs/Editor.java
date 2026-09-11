@@ -15,10 +15,11 @@ import java.io.File;
  */
 public class Editor {
 
-    public static void abrir(File carpeta, File seleccion) {
+    public static EditorTexto abrir(File carpeta, File seleccion) {
         EditorTexto editor = new EditorTexto(carpeta);
         editor.abrirDirecto(seleccion);
-        editor.setVisible(true);
+        return editor;
     }
+
 
 }

@@ -12,8 +12,7 @@ import java.security.NoSuchAlgorithmException;
 public class VentanaMain extends JFrame{
     public VentanaMain(){
         setTitle("Mini-Windows");
-        setSize(800, 600);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setSize(800, 600);  
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 

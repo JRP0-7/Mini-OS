@@ -37,7 +37,7 @@ public class Sistema {
             adminF.mkdirs();
             new File(adminF, "Documents").mkdirs();
             new File(adminF, "Music").mkdirs();
-            new File(adminF, "Images").mkdirs();
+            new File(adminF, "Images/Portadas").mkdirs();
             SystemUser su=null;
             try {
                 su = new SystemUser("admin", Autentificacion.hash("admin"), true);

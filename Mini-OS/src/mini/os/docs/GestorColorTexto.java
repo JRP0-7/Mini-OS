@@ -11,7 +11,6 @@ package mini.os.docs;
  * @author oscar
  */
 import javax.swing.JColorChooser;
-import javax.swing.JOptionPane;
 import javax.swing.JTextPane;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;

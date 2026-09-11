@@ -1,5 +1,8 @@
 package mini.os.model;
 
+import mini.os.io.ArchivoUtil;
+import mini.os.core.Sistema;
+
 import java.io.Serializable;
 
 // Mi propia implementación de una lista enlazada para no usar las de Java
@@ -11,6 +14,12 @@ public class ListaEnlazada<T> implements Serializable{
         cabeza = null;
         size = 0;
     }
+
+    public int getSize() {
+        return size;
+    }
+
+
 
     // Mete un dato nuevo al final de la lista
     public void agregar(T dato) {
@@ -71,4 +80,39 @@ public class ListaEnlazada<T> implements Serializable{
         previo.setNext(actual.getNext());
         size--;
     }
+
+    public T get(int indice){
+        Nodo<T> aux = cabeza;
+
+        if(indice <0 || indice >= size)
+            return null;
+
+        for (int i = 0; i < indice; i++) {
+            aux = aux.getNext();
+        }
+        return aux.getInfo();
+    }
+
+    
+
+    //public void eliminar beta
+        // public boolean borrar(T dato){
+        // if (cabeza.getInfo().equals(dato)) {
+        //     cabeza = cabeza.getNext();
+        //     size--;
+        //     return true;
+        // }else{
+        //     Nodo<T> aux = cabeza;
+        //     while (aux.getNext()!=null) {
+        //         if(aux.getNext().getInfo().equals(dato)){
+        //             aux.setNext(aux.getNext().getNext());
+        //             size--;
+        //             return true;
+        //         }
+        //         aux.setNext(aux.getNext());
+        //     }
+        // }
+
+
+        // return false;}
 }

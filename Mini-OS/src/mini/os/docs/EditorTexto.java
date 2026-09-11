@@ -24,7 +24,7 @@ import mini.os.docs.persistencia.EdtException;
 import mini.os.docs.persistencia.PersistenciaEDT;
 import mini.os.docs.persistencia.Tabla;
 
-public class EditorTexto extends JFrame {
+public class EditorTexto extends JInternalFrame {
 
     private final JTextPane textPane = new JTextPane();
     private final GestorFuentes gestorFuentes = new GestorFuentes();
@@ -58,10 +58,10 @@ public class EditorTexto extends JFrame {
     }
 
     public EditorTexto(File carpeta) {
-        super("Bloc de Notas");
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        super("Bloc de Notas", true, true, true, true);
+        setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
         setSize(1000, 750);
-        setLocationRelativeTo(null);
+        // setLocationRelativeTo(null);
         comboFuente = new JComboBox<>(gestorFuentes.obtenerNombres());
         seleccionarFuenteInicial();
         construirMenu();
