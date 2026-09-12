@@ -1,12 +1,10 @@
 package mini.os.model;
 
-import mini.os.io.ArchivoUtil;
-import mini.os.core.Sistema;
-
 import java.io.Serializable;
 
 // Mi propia implementación de una lista enlazada para no usar las de Java
 public class ListaEnlazada<T> implements Serializable{
+    private static final long serialVersionUID = 1L;
     Nodo<T> cabeza;
     int size;
 

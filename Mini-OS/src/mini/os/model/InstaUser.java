@@ -4,6 +4,7 @@ import java.util.Date;
 
 // Usuario con perfil tipo "Instagram" con más datos personales y seguidores
 public class InstaUser extends Users{
+    private static final long serialVersionUID = 1L;
     private String nombre;
     private char genero;
     private int edad;
@@ -60,4 +61,20 @@ public class InstaUser extends Users{
     public void setActivo(boolean activo) {
         this.activo = activo;
     }
+
+    public void agregarSeguidor(String seguidor) {
+        if(seguidores.contiene(seguidor)){
+            return;
+        }
+        seguidores.agregar(seguidor);
+    }
+
+    public void agregarSeguido(String seguido){
+        if(siguiendo.contiene(seguido)){
+            return;
+        }
+        siguiendo.agregar(seguido);
+    }
+
+    
 }

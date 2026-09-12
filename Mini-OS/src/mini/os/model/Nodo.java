@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 // Un nodo simple para la lista enlazada
 public class Nodo<T> implements Serializable{
+    private static final long serialVersionUID = 1L;
     private T info;
     private Nodo<T> next;
 

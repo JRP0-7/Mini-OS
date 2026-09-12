@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 // Clase base para cualquier tipo de usuario del sistema
 public abstract class Users implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String user;
     private String password;
 
