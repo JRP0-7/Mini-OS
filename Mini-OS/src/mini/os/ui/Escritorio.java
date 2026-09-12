@@ -1,6 +1,5 @@
 package mini.os.ui;
 
-import java.awt.FlowLayout;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
@@ -34,7 +33,7 @@ public class Escritorio extends JFrame{
         JMenuItem btnExplorador = new JMenuItem("Explorador de Archivos");
         btnExplorador.addActionListener(e->{
             File FolderUser = usuario.isAdmin() ? new File(Sistema.ROOT) : new File(Sistema.ROOT + "/" + usuario.getUser());
-            abrir(new Explorador(FolderUser));
+            abrir(new Explorador(FolderUser, escritorio));
         });
 
 
@@ -99,5 +98,9 @@ public class Escritorio extends JFrame{
         } catch (PropertyVetoException e){
 
         }
+    }
+
+    public JDesktopPane getEscritorio(){
+        return escritorio;
     }
 }

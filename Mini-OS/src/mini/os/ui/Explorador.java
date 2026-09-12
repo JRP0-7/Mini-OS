@@ -1,6 +1,7 @@
 package mini.os.ui;
 
 import java.awt.BorderLayout;
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,7 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
+import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -24,7 +25,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javazoom.jlgui.basicplayer.BasicPlayerException;
 import mini.os.audio.ReproductorMusica;
 import mini.os.core.NodoArchivos;
-import mini.os.docs.EditorTexto;
+import mini.os.docs.Editor;
 
 // Ventana para navegar por las carpetas y archivos del sistema
 public class Explorador extends JInternalFrame {
@@ -32,7 +33,7 @@ public class Explorador extends JInternalFrame {
     private Map<String, String[]> categorias = new HashMap<>();
     private File archivoCopiado;
 
-    public Explorador(File raiz) {
+    public Explorador(File raiz, JDesktopPane escritorio) {
         super("Explorador de Archivos", true, true, true, true);
         setSize(1100, 500);
         setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
@@ -196,7 +197,7 @@ public class Explorador extends JInternalFrame {
                 }
                 VisorImagenes v = new VisorImagenes(archivo.getParentFile());
                 v.genImagen(archivo);
-                v.setVisible(true);
+                abrir(v, escritorio);
 
             }
         });
@@ -214,9 +215,7 @@ public class Explorador extends JInternalFrame {
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 } else {
-                    EditorTexto ed = new EditorTexto(archivo.getParentFile());
-                    ed.abrirDirecto(archivo);
-                    ed.setVisible(true);
+                    abrir(Editor.abrir(archivo.getParentFile(), archivo), escritorio);
                 }
 
             }
@@ -236,7 +235,7 @@ public class Explorador extends JInternalFrame {
             }
             try {
                 ReproductorMusica rep = new ReproductorMusica(archivo.getParentFile());
-                rep.setVisible(true);
+                abrir(rep, escritorio);
             } catch (IOException | BasicPlayerException ex) {
                 ex.printStackTrace();
             }
@@ -481,6 +480,16 @@ public class Explorador extends JInternalFrame {
             }
         }
         f.delete();
+    }
+
+    private void abrir(JInternalFrame jf, JDesktopPane origen){
+        origen.add(jf);
+        jf.setVisible(true);
+        try{
+            jf.setSelected(true);
+        } catch (PropertyVetoException e){
+
+        }
     }
 
 }
