@@ -1,5 +1,6 @@
 package mini.os.insta.core;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -9,20 +10,25 @@ import java.util.Date;
 
 import mini.os.insta.model.Solicitud;
 import mini.os.error.UsuarioDuplicadoException;
+import mini.os.insta.model.Publicacion;
+import mini.os.insta.model.PublicacionDTO;
 import mini.os.insta.model.Respuesta;
+import mini.os.insta.model.SeguirDTO;
 import mini.os.insta.model.UserDTO;
+import mini.os.io.ArchivoUtil;
+import mini.os.model.InstaUser;
+import mini.os.model.ListaEnlazada;
 
 public class ManejoConexion implements Runnable {
     private Socket socket;
 
-
     public ManejoConexion(Socket cliente) {
-        this.socket=cliente;
+        this.socket = cliente;
     }
 
     public void run() {
 
-        ObjectOutputStream salida=null;
+        ObjectOutputStream salida = null;
         ObjectInputStream entrada;
 
         try {
@@ -30,13 +36,13 @@ public class ManejoConexion implements Runnable {
             entrada = new ObjectInputStream(socket.getInputStream());
             while (true) {
                 Solicitud soli = (Solicitud) entrada.readObject();
-                UserDTO dto = (UserDTO) soli.getDato();
                 switch (soli.getTipo()) {
                     case LOGIN:
+                        UserDTO dto = (UserDTO) soli.getDato();
                         try {
-                            if (GestorInstaUser.login(dto.getUser(), dto.getPass())!=null){
+                            if (GestorInstaUser.login(dto.getUser(), dto.getPass()) != null) {
                                 salida.writeObject(new Respuesta(true, "Login exitoso", null));
-                            }else{
+                            } else {
                                 salida.writeObject(new Respuesta(false, "Usuario o contraseña incorrectos", null));
                             }
                         } catch (NoSuchAlgorithmException e) {
@@ -45,19 +51,67 @@ public class ManejoConexion implements Runnable {
                         salida.flush();
                         break;
                     case REGISTRAR:
+                        UserDTO dto2 = (UserDTO) soli.getDato();
                         try {
-                            GestorInstaUser.registrar(dto.getUser(), dto.getPass(), dto.getNombre(), dto.getGenero(), dto.getEdad(), dto.getRutaI());
+                            GestorInstaUser.registrar(dto2.getUser(), dto2.getPass(), dto2.getNombre(),
+                                    dto2.getGenero(),
+                                    dto2.getEdad(), dto2.getRutaI());
                             salida.writeObject(new Respuesta(true, "Registro exitoso", null));
                         } catch (UsuarioDuplicadoException | NoSuchAlgorithmException e) {
                             salida.writeObject(new Respuesta(false, e.getMessage(), null));
                         }
                         salida.flush();
                         break;
+                    case PUBLICAR:
+                        try {
+                            PublicacionDTO pDTO = (PublicacionDTO) soli.getDato();
+
+                            int id = InstaServer.getGestorPub().getCode();
+                            Publicacion nueva = new Publicacion(id, pDTO.getAutor(), pDTO.getTexto(),
+                                    pDTO.getRutaImagen());
+                            ManagePublicaciones.guardar(nueva);
+                            salida.writeObject(new Respuesta(true, "Publicacion creada", null));
+                        } catch (IOException e) {
+                            salida.writeObject(new Respuesta(false, e.getMessage(), null));
+                        }
+                        salida.flush();
+                        break;
+                    case VER_TIMELINE:
+                        ListaEnlazada<Publicacion> linea = ManagePublicaciones.obtenerTimeLine();
+                        salida.writeObject(new Respuesta(true, "TimeLine recuperado", linea));
+                        salida.flush();
+                        break;
+                    case BUSCAR_USUARIO:
+                        String busqueda = (String) soli.getDato();
+                        InstaUser encontrado = GestorInstaUser.buscar(busqueda);
+                        if (encontrado == null) {
+                            salida.writeObject(new Respuesta(false, "Usuario no encontrado", null));
+                        } else {
+                            salida.writeObject(new Respuesta(true, "Usuario encontrado", encontrado));
+                        }
+                        salida.flush();
+                        break;
+                    case SEGUIR:
+                        SeguirDTO sDto = (SeguirDTO) soli.getDato();
+                        GestorInstaUser.seguir(sDto.getSeguidor(), sDto.getSeguido());
+                        salida.writeObject(new Respuesta(true, "Ahora sigues a " + sDto.getSeguido(), null));
+                        salida.flush();
+                        break;
+                    case VER_PERFIL:
+                        String nombrePerfil = (String) soli.getDato();
+                        InstaUser perfil = GestorInstaUser.buscar(nombrePerfil);
+                        if(perfil == null){
+                            salida.writeObject(new Respuesta(false, "Usuario no encontrado", null));
+                        } else {
+                            salida.writeObject(new Respuesta(true, "Perfil encontrado", perfil));
+                        }
+                        salida.flush();
+                         break;
                     default:
                         break;
                 }
             }
-        } catch (ClassNotFoundException | IOException  e) {
+        } catch (ClassNotFoundException | IOException e) {
             try {
                 salida.writeObject(new Respuesta(false, e.getMessage(), null));
                 salida.flush();
@@ -67,4 +121,5 @@ public class ManejoConexion implements Runnable {
         }
 
     }
+
 }
