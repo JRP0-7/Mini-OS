@@ -78,7 +78,7 @@ public class ConsoleGUI extends JInternalFrame {
 
                 imprimirTexto(getPromptText() + input);
 
-                if (input.trim().equals("Cls")) {
+                if (input.trim().equalsIgnoreCase("Cls")) {
                     limpiarPantalla();
                 } else if (listener != null) {
 
