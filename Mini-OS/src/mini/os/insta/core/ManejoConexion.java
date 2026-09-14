@@ -6,6 +6,8 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.security.NoSuchAlgorithmException;
 
+import mini.os.error.ArchivoCorruptoException;
+import mini.os.error.CuentaDesactivadaException;
 import mini.os.error.UsuarioDuplicadoException;
 import mini.os.insta.model.EstadoDTO;
 import mini.os.insta.model.MensajeDTO;
@@ -23,6 +25,8 @@ import mini.os.model.ListaEnlazada;
 
 public class ManejoConexion implements Runnable {
     private Socket socket;
+    private String userActual;
+    private ObjectOutputStream salida = null;
 
     public ManejoConexion(Socket cliente) {
         this.socket = cliente;
@@ -30,7 +34,6 @@ public class ManejoConexion implements Runnable {
 
     public void run() {
 
-        ObjectOutputStream salida = null;
 
         try {
             salida = new ObjectOutputStream(socket.getOutputStream());
@@ -40,23 +43,26 @@ public class ManejoConexion implements Runnable {
                 TipoPeticion tipo = soli.getTipo();
                 switch (tipo) {
                     case LOGIN:
-                        UserDTO dto = (UserDTO) soli.getDato();
+                        UserDTO DTO = (UserDTO) soli.getDato();
                         try {
-                            InstaUser u = ServicioInsta.login(dto.getUser(), dto.getPass());
+                            InstaUser u = ServicioInsta.login(DTO.getUser(), DTO.getPass());
                             if (u == null) {
                                 salida.writeObject(new Respuesta(false, "Usuario o contraseña incorrectos", null));
                             } else {
                                 salida.writeObject(new Respuesta(true, "Login exitoso", u));
+                                userActual= DTO.getUser();
                             }
                         } catch (NoSuchAlgorithmException e) {
+                            salida.writeObject(new Respuesta(false, e.getMessage(), null));
+                        } catch (CuentaDesactivadaException e) {
                             salida.writeObject(new Respuesta(false, e.getMessage(), null));
                         }
                         salida.flush();
                         break;
                     case REGISTRAR:
-                        UserDTO dto2 = (UserDTO) soli.getDato();
+                        UserDTO DTO2 = (UserDTO) soli.getDato();
                         try {
-                            InstaUser nuevo = ServicioInsta.registrar(dto2);
+                            InstaUser nuevo = ServicioInsta.registrar(DTO2);
                             salida.writeObject(new Respuesta(true, "Cuenta creada correctamente", nuevo));
                         } catch (UsuarioDuplicadoException | NoSuchAlgorithmException e) {
                             salida.writeObject(new Respuesta(false, e.getMessage(), null));
@@ -65,6 +71,8 @@ public class ManejoConexion implements Runnable {
                         break;
                     case PUBLICAR:
                         PublicacionDTO pDTO = (PublicacionDTO) soli.getDato();
+                        if(!esLogeado(pDTO.getAutor()))
+                            break;
                         Publicacion nueva = ServicioInsta.publicar(pDTO.getAutor(), pDTO.getTexto(),
                                 pDTO.getRutaImagen(), pDTO.getCarpeta());
                         salida.writeObject(new Respuesta(true, "Publicacion creada", nueva));
@@ -111,15 +119,19 @@ public class ManejoConexion implements Runnable {
                         salida.flush();
                         break;
                     case SEGUIR:
-                        SeguirDTO sDto = (SeguirDTO) soli.getDato();
-                        ServicioInsta.seguir(sDto.getSeguidor(), sDto.getSeguido());
-                        salida.writeObject(new Respuesta(true, "Ahora sigues a " + sDto.getSeguido(), null));
+                        SeguirDTO sDTO = (SeguirDTO) soli.getDato();
+                        if(!esLogeado(sDTO.getSeguidor()))
+                            break;
+                        ServicioInsta.seguir(sDTO.getSeguidor(), sDTO.getSeguido());
+                        salida.writeObject(new Respuesta(true, "Ahora sigues a " + sDTO.getSeguido(), null));
                         salida.flush();
                         break;
                     case DEJAR_SEGUIR:
-                        SeguirDTO uDto = (SeguirDTO) soli.getDato();
-                        ServicioInsta.dejarSeguir(uDto.getSeguidor(), uDto.getSeguido());
-                        salida.writeObject(new Respuesta(true, "Dejaste de seguir a " + uDto.getSeguido(), null));
+                        SeguirDTO uDTO = (SeguirDTO) soli.getDato();
+                        if(!esLogeado(uDTO.getSeguidor()))
+                            break;
+                        ServicioInsta.dejarSeguir(uDTO.getSeguidor(), uDTO.getSeguido());
+                        salida.writeObject(new Respuesta(true, "Dejaste de seguir a " + uDTO.getSeguido(), null));
                         salida.flush();
                         break;
                     case VER_SEGUIDORES:
@@ -134,6 +146,8 @@ public class ManejoConexion implements Runnable {
                         break;
                     case ACTIVAR_DESACTIVAR:
                         EstadoDTO estado = (EstadoDTO) soli.getDato();
+                        if(!esLogeado(estado.getUser()))
+                            break;
                         ServicioInsta.activarDesactivar(estado.getUser(), estado.isActivo());
                         salida.writeObject(new Respuesta(true,
                                 estado.isActivo() ? "Cuenta activada correctamente" : "Cuenta desactivada, ya no apareces en busquedas",
@@ -141,53 +155,71 @@ public class ManejoConexion implements Runnable {
                         salida.flush();
                         break;
                     case CAMBIAR_FOTO:
-                        UserDTO fotoDto = (UserDTO) soli.getDato();
-                        String ruta = ServicioInsta.cambiarFoto(fotoDto.getUser(), fotoDto.getRutaI());
+                        UserDTO fotoDTO = (UserDTO) soli.getDato();
+                        if(!esLogeado(fotoDTO.getUser()))
+                            break;
+                        String ruta = ServicioInsta.cambiarFoto(fotoDTO.getUser(), fotoDTO.getRutaI());
                         salida.writeObject(new Respuesta(true, "Foto de perfil actualizada", ruta));
                         salida.flush();
                         break;
                     case ENVIAR_MENSAJE:
                         MensajeDTO mDTO = (MensajeDTO) soli.getDato();
+                        if(!esLogeado(mDTO.getEmisor()))
+                            break;
                         ServicioInsta.enviarMensaje(mDTO.getEmisor(), mDTO.getReceptor(), mDTO.getContenido(), mDTO.getTipo());
                         salida.writeObject(new Respuesta(true, "Mensaje enviado", null));
                         salida.flush();
                         break;
                     case VER_MENSAJES:
                         ParejaDTO pareja = (ParejaDTO) soli.getDato();
+                        if(!esLogeado(pareja.getUserA()))
+                            break;
                         salida.writeObject(new Respuesta(true, "Historial de conversacion",
                                 ServicioInsta.mensajesEntre(pareja.getUserA(), pareja.getUserB())));
                         salida.flush();
                         break;
                     case CONVERSACIONES:
                         String userConv = (String) soli.getDato();
+                        if(!esLogeado(userConv))
+                            break;
                         salida.writeObject(new Respuesta(true, "Conversaciones", ServicioInsta.conversaciones(userConv)));
                         salida.flush();
                         break;
                     case MARCAR_LEIDOS:
                         ParejaDTO pareja2 = (ParejaDTO) soli.getDato();
+                        if(!esLogeado(pareja2.getUserA()))
+                            break;
                         ServicioInsta.marcarLeidos(pareja2.getUserA(), pareja2.getUserB());
                         salida.writeObject(new Respuesta(true, "Marcados como leidos", null));
                         salida.flush();
                         break;
                     case ELIMINAR_CONVERSACION:
                         ParejaDTO pareja3 = (ParejaDTO) soli.getDato();
+                        if(!esLogeado(pareja3.getUserA()))
+                            break;
                         ServicioInsta.eliminarConversacion(pareja3.getUserA(), pareja3.getUserB());
                         salida.writeObject(new Respuesta(true, "Conversacion eliminada", null));
                         salida.flush();
                         break;
                     case NO_LEIDOS:
                         String userNo = (String) soli.getDato();
+                        if(!esLogeado(userNo))
+                            break;
                         int cantidad = ServicioInsta.noLeidos(userNo);
                         salida.writeObject(new Respuesta(true, "No leidos", cantidad));
                         salida.flush();
                         break;
                     case STICKERS_DISPONIBLES:
                         String userSticky = (String) soli.getDato();
+                        if(!esLogeado(userSticky))
+                            break;
                         salida.writeObject(new Respuesta(true, "Stickers disponibles", ServicioInsta.stickersDisponibles(userSticky)));
                         salida.flush();
                         break;
                     case IMPORTAR_STICKER:
                         StickerDTO stDTO = (StickerDTO) soli.getDato();
+                        if(!esLogeado(stDTO.getUser()))
+                            break;
                         String rutaSticker = ServicioInsta.importarSticker(stDTO.getUser(), stDTO.getRutaArchivo(), stDTO.getNombre());
                         if (rutaSticker == null) {
                             salida.writeObject(new Respuesta(false, "No se pudo importar el sticker (formato o archivo invalido)", null));
@@ -197,18 +229,36 @@ public class ManejoConexion implements Runnable {
                         salida.flush();
                         break;
                     default:
+                        salida.writeObject(new Respuesta(false, "Tipo de peticion no soportado", null)); 
+                        salida.flush();
                         break;
                 }
             }
-        } catch (ClassNotFoundException | IOException e) {
+        } catch (ClassNotFoundException | IOException | ArchivoCorruptoException e) {
             try {
                 salida.writeObject(new Respuesta(false, "Error de conexion: " + e.getMessage(), null));
                 salida.flush();
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
+        } finally{
+            try{
+                socket.close();
+            }
+            catch(IOException e){
+                e.printStackTrace();
+            }
         }
 
+    }
+
+    private boolean esLogeado(String usuario) throws IOException{
+        if(userActual == null || !userActual.equals(usuario)){
+            salida.writeObject(new Respuesta(false, "Accion no Autorizada", null));
+            salida.flush();
+            return false;
+        }
+        return true;
     }
 
 }

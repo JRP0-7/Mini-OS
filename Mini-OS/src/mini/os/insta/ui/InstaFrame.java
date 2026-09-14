@@ -1,16 +1,16 @@
 package mini.os.insta.ui;
 
 import java.awt.CardLayout;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.IOException;
 
-import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
 
 import mini.os.insta.core.InstaClient;
 
-public class InstaFrame extends JFrame {
+public class InstaFrame extends JInternalFrame {
 
     private InstaClient cliente;
     private CardLayout layout;
@@ -19,13 +19,13 @@ public class InstaFrame extends JFrame {
     private MainPanel principal;
 
     public InstaFrame() {
-        setTitle("INSTA+");
+        super("INSTA+", true, true, true, true);
         setSize(1000, 650);
-        setLocationRelativeTo(null);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLocation(50,50);
+        setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
 
-        addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
+        addInternalFrameListener(new InternalFrameAdapter() {
+            public void internalFrameClosing(InternalFrameEvent e) {
                 if (cliente != null) {
                     cliente.cerrar();
                 }

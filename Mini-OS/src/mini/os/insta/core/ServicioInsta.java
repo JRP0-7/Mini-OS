@@ -15,6 +15,8 @@ import java.util.Date;
 
 import javax.imageio.ImageIO;
 
+import mini.os.error.ArchivoCorruptoException;
+import mini.os.error.CuentaDesactivadaException;
 import mini.os.error.UsuarioDuplicadoException;
 import mini.os.insta.model.MensajesDirectos;
 import mini.os.insta.model.Publicacion;
@@ -40,7 +42,7 @@ public class ServicioInsta {
         return new File(carpeta, nombre);
     }
 
-    private static ListaEnlazada<String> leerNombres(File f) {
+    private static ListaEnlazada<String> leerNombres(File f) throws ArchivoCorruptoException {
         if (!f.exists()) return new ListaEnlazada<>();
         ListaEnlazada<String> l = ArchivoUtil.leer(f.getPath());
         return l == null ? new ListaEnlazada<>() : l;
@@ -50,7 +52,7 @@ public class ServicioInsta {
         ArchivoUtil.guardar(lista, f.getPath());
     }
 
-    private static ListaEnlazada<InstaUser> leerUsuarios() {
+    private static ListaEnlazada<InstaUser> leerUsuarios() throws ArchivoCorruptoException {
         File f = new File(InstaServer.IROOT, "users.ins");
         if (!f.exists()) return new ListaEnlazada<>();
         ListaEnlazada<InstaUser> l = ArchivoUtil.leer(f.getPath());
@@ -61,11 +63,11 @@ public class ServicioInsta {
         ArchivoUtil.guardar(lista, new File(InstaServer.IROOT, "users.ins").getPath());
     }
 
-    private static ListaEnlazada<Publicacion> leerPublicaciones(String user) {
+    private static ListaEnlazada<Publicacion> leerPublicaciones(String user) throws ArchivoCorruptoException {
         return leerPublicaciones(new File(carpeta(user), "insta.ins"));
     }
 
-    private static ListaEnlazada<Publicacion> leerPublicaciones(File f) {
+    private static ListaEnlazada<Publicacion> leerPublicaciones(File f) throws ArchivoCorruptoException {
         if (!f.exists()) return new ListaEnlazada<>();
         ListaEnlazada<Publicacion> l = ArchivoUtil.leer(f.getPath());
         return l == null ? new ListaEnlazada<>() : l;
@@ -75,7 +77,7 @@ public class ServicioInsta {
         ArchivoUtil.guardar(lista, new File(carpeta(user), "insta.ins").getPath());
     }
 
-    private static ListaEnlazada<MensajesDirectos> leerMensajes(String user) {
+    private static ListaEnlazada<MensajesDirectos> leerMensajes(String user) throws ArchivoCorruptoException {
         File f = new File(carpeta(user), "inbox.ins");
         if (!f.exists()) return new ListaEnlazada<>();
         ListaEnlazada<MensajesDirectos> l = ArchivoUtil.leer(f.getPath());
@@ -86,7 +88,7 @@ public class ServicioInsta {
         ArchivoUtil.guardar(lista, new File(carpeta(user), "inbox.ins").getPath());
     }
 
-    private static ListaEnlazada<String> leerStickers(String user) {
+    private static ListaEnlazada<String> leerStickers(String user) throws ArchivoCorruptoException {
         return leerNombres(new File(carpeta(user), "stickers.ins"));
     }
 
@@ -94,7 +96,7 @@ public class ServicioInsta {
         guardarNombres(new File(carpeta(user), "stickers.ins"), lista);
     }
 
-    public static synchronized void inicializarDatos() {
+    public static synchronized void inicializarDatos() throws ArchivoCorruptoException {
         File raiz = new File(InstaServer.IROOT);
         raiz.mkdirs();
         File globales = new File(raiz, "stickers_globales");
@@ -135,7 +137,7 @@ public class ServicioInsta {
     }
 
     public static synchronized InstaUser registrar(UserDTO dto)
-            throws UsuarioDuplicadoException, NoSuchAlgorithmException {
+            throws UsuarioDuplicadoException, NoSuchAlgorithmException, ArchivoCorruptoException {
         String user = dto.getUser();
         if (existe(user)) {
             throw new UsuarioDuplicadoException("El usuario " + user + " ya existe");
@@ -170,14 +172,16 @@ public class ServicioInsta {
     }
 
     public static synchronized InstaUser login(String user, String pass)
-            throws NoSuchAlgorithmException {
+            throws NoSuchAlgorithmException, CuentaDesactivadaException, ArchivoCorruptoException {
         InstaUser u = buscar(user);
         if (u == null) return null;
         if (!u.getPassword().equals(Autentificacion.hash(pass))) return null;
+        if(!u.isActivo()) 
+            throw new CuentaDesactivadaException("La cuenta esta desactivada");
         return u;
     }
 
-    public static synchronized InstaUser buscar(String user) {
+    public static synchronized InstaUser buscar(String user) throws ArchivoCorruptoException {
         ListaEnlazada<InstaUser> lista = leerUsuarios();
         for (int i = 0; i < lista.getSize(); i++) {
             InstaUser u = lista.get(i);
@@ -186,20 +190,20 @@ public class ServicioInsta {
         return null;
     }
 
-    public static synchronized boolean existe(String user) {
+    public static synchronized boolean existe(String user) throws ArchivoCorruptoException {
         return buscar(user) != null;
     }
 
-    public static synchronized boolean esActiva(String user) {
+    public static synchronized boolean esActiva(String user) throws ArchivoCorruptoException {
         InstaUser u = buscar(user);
         return u != null && u.isActivo();
     }
 
-    public static synchronized InstaUser perfil(String user) {
+    public static synchronized InstaUser perfil(String user) throws ArchivoCorruptoException {
         return buscar(user);
     }
 
-    public static synchronized ListaEnlazada<String> buscarPersonas(String texto) {
+    public static synchronized ListaEnlazada<String> buscarPersonas(String texto) throws ArchivoCorruptoException {
         ListaEnlazada<String> resultado = new ListaEnlazada<>();
         if (texto == null || texto.trim().isEmpty()) return resultado;
         String t = texto.trim().toLowerCase();
@@ -213,7 +217,7 @@ public class ServicioInsta {
         return resultado;
     }
 
-    public static synchronized void seguir(String seguidor, String seguido) {
+    public static synchronized void seguir(String seguidor, String seguido) throws ArchivoCorruptoException {
         if (seguidor.equals(seguido)) return;
         if (!existe(seguido)) return;
 
@@ -230,7 +234,7 @@ public class ServicioInsta {
         }
     }
 
-    public static synchronized void dejarSeguir(String seguidor, String seguido) {
+    public static synchronized void dejarSeguir(String seguidor, String seguido) throws ArchivoCorruptoException {
         ListaEnlazada<String> sig = leerNombres(new File(carpeta(seguidor), "following.ins"));
         sig.eliminar(seguido);
         guardarNombres(new File(carpeta(seguidor), "following.ins"), sig);
@@ -240,23 +244,23 @@ public class ServicioInsta {
         guardarNombres(new File(carpeta(seguido), "followers.ins"), seg);
     }
 
-    public static synchronized ListaEnlazada<String> seguidoresDe(String user) {
+    public static synchronized ListaEnlazada<String> seguidoresDe(String user) throws ArchivoCorruptoException {
         return leerNombres(new File(carpeta(user), "followers.ins"));
     }
 
-    public static synchronized ListaEnlazada<String> siguiendoDe(String user) {
+    public static synchronized ListaEnlazada<String> siguiendoDe(String user) throws ArchivoCorruptoException {
         return leerNombres(new File(carpeta(user), "following.ins"));
     }
 
-    public static synchronized boolean loSigo(String yo, String otro) {
+    public static synchronized boolean loSigo(String yo, String otro) throws ArchivoCorruptoException {
         return siguiendoDe(yo).contiene(otro);
     }
 
-    public static synchronized Publicacion publicar(String autor, String texto, String rutaImagen) {
+    public static synchronized Publicacion publicar(String autor, String texto, String rutaImagen) throws ArchivoCorruptoException {
         return publicar(autor, texto, rutaImagen, null);
     }
 
-    public static synchronized Publicacion publicar(String autor, String texto, String rutaImagen, String carpetaPersonal) {
+    public static synchronized Publicacion publicar(String autor, String texto, String rutaImagen, String carpetaPersonal) throws ArchivoCorruptoException {
         String rutaFinal = guardarImagenPublicacion(autor, rutaImagen, carpetaPersonal);
         int id = siguienteIdPublicacion();
         Publicacion p = new Publicacion(id, autor, texto, rutaFinal);
@@ -266,7 +270,7 @@ public class ServicioInsta {
         return p;
     }
 
-    public static synchronized ListaEnlazada<Publicacion> timelineDe(String user) {
+    public static synchronized ListaEnlazada<Publicacion> timelineDe(String user) throws ArchivoCorruptoException {
         ListaEnlazada<Publicacion> resultado = new ListaEnlazada<>();
         agregarPublicacionesDe(resultado, user);
         ListaEnlazada<String> siguiendo = siguiendoDe(user);
@@ -276,12 +280,12 @@ public class ServicioInsta {
         return ordenarDesc(resultado);
     }
 
-    public static synchronized ListaEnlazada<Publicacion> publicacionesDe(String user) {
+    public static synchronized ListaEnlazada<Publicacion> publicacionesDe(String user) throws ArchivoCorruptoException {
         if (!esActiva(user)) return new ListaEnlazada<>();
         return ordenarDesc(leerPublicaciones(user));
     }
 
-    public static synchronized ListaEnlazada<Publicacion> buscarHashtag(String tag) {
+    public static synchronized ListaEnlazada<Publicacion> buscarHashtag(String tag) throws ArchivoCorruptoException {
         ListaEnlazada<Publicacion> resultado = new ListaEnlazada<>();
         String t = tag.trim().toLowerCase();
         if (t.isEmpty()) return resultado;
@@ -300,7 +304,7 @@ public class ServicioInsta {
         return resultado;
     }
 
-    public static synchronized ListaEnlazada<Publicacion> interacciones(String user) {
+    public static synchronized ListaEnlazada<Publicacion> interacciones(String user) throws ArchivoCorruptoException {
         ListaEnlazada<Publicacion> resultado = new ListaEnlazada<>();
         ListaEnlazada<InstaUser> usuarios = leerUsuarios();
         for (int i = 0; i < usuarios.getSize(); i++) {
@@ -317,7 +321,7 @@ public class ServicioInsta {
         return ordenarDesc(resultado);
     }
 
-    private static void agregarPublicacionesDe(ListaEnlazada<Publicacion> resultado, String autor) {
+    private static void agregarPublicacionesDe(ListaEnlazada<Publicacion> resultado, String autor) throws ArchivoCorruptoException {
         if (!esActiva(autor)) return;
         ListaEnlazada<Publicacion> pubs = leerPublicaciones(autor);
         for (int i = 0; i < pubs.getSize(); i++) {
@@ -350,7 +354,7 @@ public class ServicioInsta {
         return texto.toLowerCase().contains("@" + user.toLowerCase());
     }
 
-    public static synchronized void enviarMensaje(String emisor, String receptor, String contenido, String tipo) {
+    public static synchronized void enviarMensaje(String emisor, String receptor, String contenido, String tipo) throws ArchivoCorruptoException {
         if (!existe(receptor)) return;
         int id = siguienteIdMensaje();
 
@@ -366,7 +370,7 @@ public class ServicioInsta {
         guardarMensajes(receptor, otros);
     }
 
-    public static synchronized ListaEnlazada<String> conversaciones(String user) {
+    public static synchronized ListaEnlazada<String> conversaciones(String user) throws ArchivoCorruptoException {
         ListaEnlazada<String> resultado = new ListaEnlazada<>();
         ListaEnlazada<MensajesDirectos> msj = leerMensajes(user);
         for (int i = 0; i < msj.getSize(); i++) {
@@ -379,7 +383,7 @@ public class ServicioInsta {
         return resultado;
     }
 
-    public static synchronized ListaEnlazada<MensajesDirectos> mensajesEntre(String user, String otro) {
+    public static synchronized ListaEnlazada<MensajesDirectos> mensajesEntre(String user, String otro) throws ArchivoCorruptoException {
         ListaEnlazada<MensajesDirectos> resultado = new ListaEnlazada<>();
         ListaEnlazada<MensajesDirectos> msj = leerMensajes(user);
         for (int i = 0; i < msj.getSize(); i++) {
@@ -392,7 +396,7 @@ public class ServicioInsta {
         return resultado;
     }
 
-    public static synchronized void marcarLeidos(String user, String otro) {
+    public static synchronized void marcarLeidos(String user, String otro) throws ArchivoCorruptoException {
         ListaEnlazada<MensajesDirectos> msj = leerMensajes(user);
         boolean cambio = false;
         for (int i = 0; i < msj.getSize(); i++) {
@@ -405,7 +409,7 @@ public class ServicioInsta {
         if (cambio) guardarMensajes(user, msj);
     }
 
-    public static synchronized void eliminarConversacion(String user, String otro) {
+    public static synchronized void eliminarConversacion(String user, String otro) throws ArchivoCorruptoException {
         ListaEnlazada<MensajesDirectos> msj = leerMensajes(user);
         ListaEnlazada<MensajesDirectos> nuevo = new ListaEnlazada<>();
         for (int i = 0; i < msj.getSize(); i++) {
@@ -417,7 +421,7 @@ public class ServicioInsta {
         guardarMensajes(user, nuevo);
     }
 
-    public static synchronized int noLeidos(String user) {
+    public static synchronized int noLeidos(String user) throws ArchivoCorruptoException {
         int cont = 0;
         ListaEnlazada<MensajesDirectos> msj = leerMensajes(user);
         for (int i = 0; i < msj.getSize(); i++) {
@@ -427,7 +431,7 @@ public class ServicioInsta {
         return cont;
     }
 
-    public static synchronized void activarDesactivar(String user, boolean activo) {
+    public static synchronized void activarDesactivar(String user, boolean activo) throws ArchivoCorruptoException {
         ListaEnlazada<InstaUser> lista = leerUsuarios();
         for (int i = 0; i < lista.getSize(); i++) {
             InstaUser u = lista.get(i);
@@ -439,7 +443,7 @@ public class ServicioInsta {
         guardarUsuarios(lista);
     }
 
-    public static synchronized String cambiarFoto(String user, String nuevaRuta) {
+    public static synchronized String cambiarFoto(String user, String nuevaRuta) throws ArchivoCorruptoException {
         String ruta = guardarFoto(nuevaRuta, user, "foto_perfil" + extension(nuevaRuta));
         ListaEnlazada<InstaUser> lista = leerUsuarios();
         for (int i = 0; i < lista.getSize(); i++) {
@@ -453,7 +457,7 @@ public class ServicioInsta {
         return ruta;
     }
 
-    public static synchronized ListaEnlazada<String> stickersDisponibles(String user) {
+    public static synchronized ListaEnlazada<String> stickersDisponibles(String user) throws ArchivoCorruptoException {
         ListaEnlazada<String> resultado = new ListaEnlazada<>();
         ListaEnlazada<String> nombres = leerStickers(user);
         File globales = new File(InstaServer.IROOT, "stickers_globales");
@@ -469,7 +473,7 @@ public class ServicioInsta {
         return resultado;
     }
 
-    public static synchronized String importarSticker(String user, String ruta, String nombre) {
+    public static synchronized String importarSticker(String user, String ruta, String nombre) throws ArchivoCorruptoException {
         if (ruta == null) return null;
         File src = new File(ruta);
         if (!src.exists()) return null;

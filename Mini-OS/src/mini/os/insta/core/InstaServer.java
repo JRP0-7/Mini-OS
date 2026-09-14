@@ -5,13 +5,12 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import mini.os.core.Sistema;
-import mini.os.insta.model.gestorPublicacion;
+import mini.os.error.ArchivoCorruptoException;
 
 public class InstaServer {
 
     public static final String IROOT = pathRaiz();
     public static final int PORT = 1500;
-    public static final gestorPublicacion gestorPub = new gestorPublicacion();
 
     private static boolean servidorActivo = false;
 
@@ -19,7 +18,7 @@ public class InstaServer {
         return Sistema.ROOT + "/insta";
     }
 
-    public static void iniciar() {
+    public static void iniciar() throws ArchivoCorruptoException {
         ServicioInsta.inicializarDatos();
     }
 
@@ -44,11 +43,7 @@ public class InstaServer {
         hilo.start();
     }
 
-    public static gestorPublicacion getGestorPub() {
-        return gestorPub;
-    }
-
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ArchivoCorruptoException {
         iniciar();
         iniciarServidorEnSegundoPlano();
         while (true) {
