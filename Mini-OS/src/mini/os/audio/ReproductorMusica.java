@@ -77,7 +77,7 @@ public class ReproductorMusica extends JInternalFrame {
                 iDescripcion.setText(descripcion.isEmpty() ? "(Sin descripción)" : "Descripción: " + descripcion);
                 String rutaImagen = informacion.get(indiceA).getRutaImagen();
                 if (!rutaImagen.isEmpty()) {
-                    File careta = new File(raiz.getParentFile(), "Images/Portadas/"+rutaImagen);
+                    File careta = new File(raiz.getParentFile(), "Mis Imágenes/Portadas/"+rutaImagen);
                     try {
                         BufferedImage img = ImageIO.read(careta);
                         if (img != null)
@@ -257,7 +257,7 @@ public class ReproductorMusica extends JInternalFrame {
         portadas.clear();
 
         filtrar(raiz);
-        filtrarPortadas(new File(raiz.getParentFile(), "Images/Portadas"));
+        filtrarPortadas(new File(raiz.getParentFile(), "Mis Imágenes/Portadas"));
         cargarInfo();
         llenarLista();
 

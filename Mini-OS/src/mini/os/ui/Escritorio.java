@@ -41,19 +41,19 @@ public class Escritorio extends JFrame{
 
         JMenuItem btnEditor = new JMenuItem("Editor de Texto");
         btnEditor.addActionListener(e->{
-            File FolderUser = new File(Sistema.ROOT + "/" + usuario.getUser()+ "/Documents");
+            File FolderUser = new File(Sistema.ROOT + "/" + usuario.getUser()+ "/Mis Documentos");
             abrir(Editor.abrir(FolderUser, null));
         });
 
         JMenuItem btnVisualizador = new JMenuItem("Visor de Imagenes");
         btnVisualizador.addActionListener(e->{
-            File FolderUser = new File(Sistema.ROOT + "/" + usuario.getUser()+ "/Images");
+            File FolderUser = new File(Sistema.ROOT + "/" + usuario.getUser()+ "/Mis Imágenes");
             abrir(new VisorImagenes(FolderUser));
         });
 
         JMenuItem btnReproductor = new JMenuItem("Reproductor Musical");
         btnReproductor.addActionListener(e->{
-            File FolderUser = new File(Sistema.ROOT + "/" + usuario.getUser()+ "/Music");
+            File FolderUser = new File(Sistema.ROOT + "/" + usuario.getUser()+ "/Música");
             try {
                 abrir(new ReproductorMusica(FolderUser));
             } catch (IOException | BasicPlayerException e1) {

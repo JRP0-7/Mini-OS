@@ -20,9 +20,9 @@ public class GestorUser {
         File UserFolder = new File(Sistema.ROOT + "/" + user);
         UserFolder.mkdirs();
 
-        new File(UserFolder, "Documents").mkdirs();
-        new File(UserFolder, "Music").mkdirs();
-        new File(UserFolder, "Images/Portadas").mkdirs();
+        new File(UserFolder, "Mis Documentos").mkdirs();
+        new File(UserFolder, "Música").mkdirs();
+        new File(UserFolder, "Mis Imágenes/Portadas").mkdirs();
         
         String hashPass= Autentificacion.hash(pass);
 
@@ -36,7 +36,7 @@ public class GestorUser {
     // Verifica si el usuario y la contraseña son correctos para entrar
     public static SystemUser login(String user, String pass) throws NoSuchAlgorithmException {
         File folder = new File(Sistema.ROOT + "/" + user);
-        String[] carpetas = {"Documents", "Music", "Images", "Images/Portadas"};
+        String[] carpetas = {"Mis Documentos", "Música", "Mis Imágenes", "Mis Imágenes/Portadas"};
         
         if(!folder.exists()){
             return null;

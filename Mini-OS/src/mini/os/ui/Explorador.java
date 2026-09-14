@@ -39,9 +39,9 @@ public class Explorador extends JInternalFrame {
         setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
 
         // Definimos las extensiones de cada categoría
-        categorias.put("Images", new String[] { "jpg", "png", "jpeg" });
-        categorias.put("Documents", new String[] { "txt", "docx", "pdf" });
-        categorias.put("Music", new String[] { "mp3", "wav" });
+        categorias.put("Mis Imágenes", new String[] { "jpg", "png", "jpeg" });
+        categorias.put("Mis Documentos", new String[] { "txt", "docx", "pdf" });
+        categorias.put("Música", new String[] { "mp3", "wav" });
 
         // Creamos el árbol de archivos y lo ponemos en el JTree
         DefaultMutableTreeNode NRaiz = crearNodo(raiz, 0);

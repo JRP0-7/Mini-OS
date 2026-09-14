@@ -35,9 +35,9 @@ public class Sistema {
         File adminF = new File(ROOT + "/admin");
         if(!adminF.exists()){
             adminF.mkdirs();
-            new File(adminF, "Documents").mkdirs();
-            new File(adminF, "Music").mkdirs();
-            new File(adminF, "Images/Portadas").mkdirs();
+            new File(adminF, "Mis Documentos").mkdirs();
+            new File(adminF, "Música").mkdirs();
+            new File(adminF, "Mis Imágenes/Portadas").mkdirs();
             SystemUser su=null;
             try {
                 su = new SystemUser("admin", Autentificacion.hash("admin"), true);
