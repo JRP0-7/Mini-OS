@@ -17,6 +17,8 @@ import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -26,6 +28,7 @@ import javazoom.jlgui.basicplayer.BasicPlayerException;
 import mini.os.audio.ReproductorMusica;
 import mini.os.core.NodoArchivos;
 import mini.os.docs.Editor;
+import mini.os.model.ListaEnlazada;
 
 // Ventana para navegar por las carpetas y archivos del sistema
 public class Explorador extends JInternalFrame {
@@ -148,31 +151,17 @@ public class Explorador extends JInternalFrame {
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            try {
-                File hijos[] = destino.listFiles();
-                boolean existe = false;
-                if (hijos != null) {
-                    // Chequeamos si ya hay un archivo con el mismo nombre en la carpeta destino
-                    for (File hijo : hijos) {
-                        if (archivoCopiado.getName().equals(hijo.getName())) {
-                            existe = true;
-                        }
-                    }
-                    if (existe) {
-                        // Si existe, preguntamos si quiere reemplazarlo
-                        int res = JOptionPane.showConfirmDialog(pegar, "Desea sobreescribir el archivo?");
-                        if (res != JOptionPane.YES_OPTION) {
-                            return;
-                        } else {
-                            Files.copy(archivoCopiado.toPath(),
-                                    new File(destino, archivoCopiado.getName()).toPath(),
-                                    StandardCopyOption.REPLACE_EXISTING);
-                        }
-                    } else {
-                        // Si no existe, simplemente lo copiamos
-                        Files.copy(archivoCopiado.toPath(), new File(destino, archivoCopiado.getName()).toPath());
-                    }
+
+            File destinoFinal = new File(destino, archivoCopiado.getName());
+            if (destinoFinal.exists()) {
+                // Si ya existe algo con ese nombre, preguntamos si quiere reemplazarlo
+                int res = JOptionPane.showConfirmDialog(pegar, "Desea sobreescribir el elemento " + archivoCopiado.getName() + "?");
+                if (res != JOptionPane.YES_OPTION) {
+                    return;
                 }
+            }
+            try {
+                copiar(archivoCopiado, destino);
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
@@ -325,6 +314,34 @@ public class Explorador extends JInternalFrame {
             recargarArbol(arbol, raiz);
         });
 
+        JTextField campoBusqueda = new JTextField(15);
+        JButton btnBuscar = new JButton("Buscar");
+        btnBuscar.addActionListener(e -> {
+            String texto = campoBusqueda.getText().trim();
+            if (texto.isEmpty()) {
+                return;
+            }
+            Thread t = new Thread(() -> {
+                ListaEnlazada<String> resultados = new ListaEnlazada<>();
+                buscar(raiz, texto, resultados);
+                SwingUtilities.invokeLater(() -> {
+                    if (resultados.getSize() == 0) {
+                        JOptionPane.showMessageDialog(this, "No se encontraron archivos o carpetas con: " + texto);
+                        return;
+                    }
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < resultados.getSize(); i++) {
+                        sb.append(resultados.get(i)).append("\n");
+                    }
+                    JTextArea area = new JTextArea(sb.toString());
+                    area.setEditable(false);
+                    JOptionPane.showMessageDialog(this, new JScrollPane(area),
+                            "Resultados de la busqueda (" + resultados.getSize() + ")", JOptionPane.INFORMATION_MESSAGE);
+                });
+            });
+            t.start();
+        });
+
         JScrollPane lista = new JScrollPane(arbol);
 
         JPanel pBotones = new JPanel();
@@ -340,6 +357,8 @@ public class Explorador extends JInternalFrame {
         pBotones.add(verImage);
         pBotones.add(verDoc);
         pBotones.add(verMusica);
+        pBotones.add(campoBusqueda);
+        pBotones.add(btnBuscar);
 
         // Solo mostramos el boton que corresponde a la extension del archivo
         // seleccionado
@@ -481,6 +500,46 @@ public class Explorador extends JInternalFrame {
             }
         }
         f.delete();
+    }
+
+    // Copia un archivo o una carpeta (con todo su contenido) dentro de destino
+    private void copiar(File origen, File destino) throws IOException {
+        if (origen.isDirectory()) {
+            File destinoCarpeta = new File(destino, origen.getName());
+            if (!destinoCarpeta.exists()) {
+                destinoCarpeta.mkdirs();
+            }
+            File[] hijos = origen.listFiles();
+            if (hijos != null) {
+                for (File hijo : hijos) {
+                    if (hijo.isDirectory()) {
+                        copiar(hijo, destinoCarpeta);
+                    } else {
+                        Files.copy(hijo.toPath(), new File(destinoCarpeta, hijo.getName()).toPath(),
+                                StandardCopyOption.REPLACE_EXISTING);
+                    }
+                }
+            }
+        } else {
+            Files.copy(origen.toPath(), new File(destino, origen.getName()).toPath(),
+                    StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
+    // Recorre el arbol guardando en una lista enlazada las coincidencias
+    private void buscar(File carpeta, String texto, ListaEnlazada<String> resultados) {
+        File[] hijos = carpeta.listFiles();
+        if (hijos == null) {
+            return;
+        }
+        for (File hijo : hijos) {
+            if (hijo.getName().toLowerCase().contains(texto.toLowerCase())) {
+                resultados.agregar(hijo.getAbsolutePath());
+            }
+            if (hijo.isDirectory()) {
+                buscar(hijo, texto, resultados);
+            }
+        }
     }
 
     private void abrir(JInternalFrame jf, JDesktopPane origen){
