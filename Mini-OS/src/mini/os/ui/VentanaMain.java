@@ -3,6 +3,7 @@ package mini.os.ui;
 import javax.swing.*;
 
 import mini.os.core.GestorUser;
+import mini.os.error.ArchivoCorruptoException;
 import mini.os.model.SystemUser;
 
 import java.awt.FlowLayout;
@@ -52,8 +53,8 @@ public class VentanaMain extends JFrame{
                 else{
                     JOptionPane.showMessageDialog(this, "Usuario o Contraseña incorrectos");
                 }
-            } catch (NoSuchAlgorithmException e1) {
-                e1.printStackTrace();
+            } catch (NoSuchAlgorithmException | ArchivoCorruptoException e1) {
+                 JOptionPane.showMessageDialog(this, "Error al iniciar sesion: " + e1.getMessage());
             }
         });
 

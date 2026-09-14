@@ -9,12 +9,14 @@ import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 
 import javazoom.jlgui.basicplayer.BasicPlayerException;
 import mini.os.audio.ReproductorMusica;
 import mini.os.console.Consola;
 import mini.os.core.Sistema;
 import mini.os.docs.Editor;
+import mini.os.error.ArchivoCorruptoException;
 import mini.os.insta.core.InstaServer;
 import mini.os.insta.ui.InstaFrame;
 import mini.os.model.SystemUser;
@@ -41,7 +43,7 @@ public class Escritorio extends JFrame{
 
         JMenuItem btnEditor = new JMenuItem("Editor de Texto");
         btnEditor.addActionListener(e->{
-            File FolderUser = new File(Sistema.ROOT + "/" + usuario.getUser()+ "/Mis Documentos");
+            File FolderUser = usuario.isAdmin() ? new File(Sistema.ROOT) : new File(Sistema.ROOT + "/" + usuario.getUser() + "/Mis Documentos");
             abrir(Editor.abrir(FolderUser, null));
         });
 
@@ -69,9 +71,13 @@ public class Escritorio extends JFrame{
 
         JMenuItem btnInsta = new JMenuItem("INSTA+");
         btnInsta.addActionListener(e->{
-            InstaServer.iniciar();
-            InstaServer.iniciarServidorEnSegundoPlano();
-            new InstaFrame().setVisible(true);
+            try{
+                InstaServer.iniciar();
+                InstaServer.iniciarServidorEnSegundoPlano();
+                abrir(new InstaFrame());
+            }catch (ArchivoCorruptoException ex){
+                JOptionPane.showMessageDialog(this, "No se pudo iniciar Insta+ " + ex.getMessage());
+            }
         });
 
         JMenuItem btnGestion  = new JMenuItem("Gestion de Usuarios");

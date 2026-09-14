@@ -3,6 +3,7 @@ package mini.os.core;
 import java.io.File;
 import java.security.NoSuchAlgorithmException;
 
+import mini.os.error.ArchivoCorruptoException;
 import mini.os.error.UsuarioDuplicadoException;
 import mini.os.io.ArchivoUtil;
 import mini.os.io.Autentificacion;
@@ -12,7 +13,7 @@ import mini.os.model.SystemUser;
 // Esta clase se encarga de crear usuarios y manejar el login
 public class GestorUser {
     // Crea un usuario nuevo, le hace sus carpetas y guarda los datos
-    public static void crearUser(String user, String pass, boolean admin) throws UsuarioDuplicadoException, NoSuchAlgorithmException {
+    public static void crearUser(String user, String pass, boolean admin) throws UsuarioDuplicadoException, NoSuchAlgorithmException, ArchivoCorruptoException {
         ListaEnlazada<String> lista = ArchivoUtil.leer(Sistema.ROOT + "/users.xr");
         if (lista.contiene(user)) {
             throw new UsuarioDuplicadoException("El usuario " + user + " ya existe");
@@ -34,7 +35,7 @@ public class GestorUser {
     }
 
     // Verifica si el usuario y la contraseña son correctos para entrar
-    public static SystemUser login(String user, String pass) throws NoSuchAlgorithmException {
+    public static SystemUser login(String user, String pass) throws NoSuchAlgorithmException, ArchivoCorruptoException {
         File folder = new File(Sistema.ROOT + "/" + user);
         String[] carpetas = {"Mis Documentos", "Música", "Mis Imágenes", "Mis Imágenes/Portadas"};
         
@@ -58,11 +59,11 @@ public class GestorUser {
         }
     }
 
-    public static ListaEnlazada<String> listarUsuarios(){
+    public static ListaEnlazada<String> listarUsuarios() throws ArchivoCorruptoException{
         return ArchivoUtil.leer(Sistema.ROOT + "/users.xr");
     }
 
-    public static void eliminarUsuario(String user){
+    public static void eliminarUsuario(String user) throws ArchivoCorruptoException{
         if(user.equals("admin")){
             return;
         }

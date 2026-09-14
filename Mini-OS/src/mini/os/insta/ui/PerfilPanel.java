@@ -10,7 +10,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import mini.os.error.UsuarioDuplicadoException;
 import mini.os.insta.core.InstaClient;
 import mini.os.model.InstaUser;
 

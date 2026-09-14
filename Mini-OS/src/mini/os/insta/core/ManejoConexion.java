@@ -63,6 +63,7 @@ public class ManejoConexion implements Runnable {
                         UserDTO DTO2 = (UserDTO) soli.getDato();
                         try {
                             InstaUser nuevo = ServicioInsta.registrar(DTO2);
+                            userActual = DTO2.getUser();
                             salida.writeObject(new Respuesta(true, "Cuenta creada correctamente", nuevo));
                         } catch (UsuarioDuplicadoException | NoSuchAlgorithmException e) {
                             salida.writeObject(new Respuesta(false, e.getMessage(), null));

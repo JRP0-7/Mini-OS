@@ -12,6 +12,7 @@ package mini.os.docs;
  */
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.filechooser.FileSystemView;
 import javax.swing.text.*;
 import javax.swing.undo.UndoManager;
 import java.awt.*;
@@ -144,23 +145,12 @@ public class EditorTexto extends JInternalFrame {
             return;
         }
         File archivo = selector.getSelectedFile();
-        if (archivo.getName().toLowerCase().endsWith(".txt")) {
-            abrirPlano(archivo);
-        } else {
-            abrirEDT(archivo);
+        if (!URLValido(archivo)) {
+            JOptionPane.showMessageDialog(this, "No se pueden abrir archivos de afuera del entorno",
+                    "Error de Apertura", JOptionPane.ERROR_MESSAGE);
+            return;
         }
-    }
-
-    private void abrirPlano(File archivo) {
-        try {
-            String contenido = new String(Files.readAllBytes(archivo.toPath()), StandardCharsets.UTF_8);
-            textPane.setText(contenido);
-            archivoActual = archivo;
-            setTitle("Bloc de Notas - " + archivo.getName());
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, e.getMessage(),
-                    "No se pudo abrir", JOptionPane.ERROR_MESSAGE);
-        }
+        abrirEDT(archivo);
     }
 
     private void abrirEDT(File archivo) {
@@ -191,11 +181,7 @@ public class EditorTexto extends JInternalFrame {
 
     public void abrirDirecto(File select) {
         if (select != null) {
-            if (select.getName().toLowerCase().endsWith(".txt")) {
-                abrirPlano(select);
-            } else {
-                abrirEDT(select);
-            }
+            abrirEDT(select);
         }
     }
 
@@ -215,17 +201,20 @@ public class EditorTexto extends JInternalFrame {
         File archivo = selector.getSelectedFile();
 
         String nombre = archivo.getName().toLowerCase();
-        if (!nombre.endsWith(".edt") && !nombre.endsWith(".txt")) {
-            archivo = new File(archivo.getParentFile(), archivo.getName() + ".edt");
+        if (!nombre.endsWith(".txt")) {
+            archivo = new File(archivo.getParentFile(), archivo.getName() + ".txt");
         }
+
+        if (!URLValido(archivo)) {
+            JOptionPane.showMessageDialog(this, "No se pueden guardar archivos fuera del entorno", "Error de Guardado",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         guardarEn(archivo);
     }
 
     private void guardarEn(File archivo) {
-        if (archivo.getName().toLowerCase().endsWith(".txt")) {
-            guardarPlano(archivo);
-            return;
-        }
         try {
             Documento documento = PersistenciaEDT.desdeStyledDocument(textPane.getStyledDocument());
 
@@ -250,21 +239,34 @@ public class EditorTexto extends JInternalFrame {
         }
     }
 
-    private void guardarPlano(File archivo) {
-        try {
-            Files.write(archivo.toPath(), textPane.getText().getBytes(StandardCharsets.UTF_8));
-            archivoActual = archivo;
-            setTitle("Bloc de Notas - " + archivo.getName());
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, e.getMessage(),
-                    "No se pudo guardar", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
     private JFileChooser crearSelector() {
-        JFileChooser selector = new JFileChooser();
+        JFileChooser selector = new JFileChooser(new FileSystemView() {
+            @Override
+            public File getDefaultDirectory() {
+                return carpetaOrigen;
+            }
+
+            @Override
+            public File getHomeDirectory() {
+                return carpetaOrigen;
+            }
+
+            @Override
+            public File[] getRoots() {
+                return new File[] { carpetaOrigen };
+            }
+
+            @Override
+            public File createNewFolder(File containingDir) throws IOException {
+                File nuevo = new File(containingDir, "Nueva carpeta");
+                if (!nuevo.mkdir()) {
+                    throw new IOException("No se pudo crear la carpeta");
+                }
+                return nuevo;
+            }
+        });
         selector.setCurrentDirectory(carpetaOrigen);
-        selector.setFileFilter(new FileNameExtensionFilter("Documento del editor (*.edt, *.txt)", "edt", "txt"));
+        selector.setFileFilter(new FileNameExtensionFilter("Documento del editor (*.txt)", "txt"));
         return selector;
     }
 
@@ -385,5 +387,15 @@ public class EditorTexto extends JInternalFrame {
         panel.setBorder(BorderFactory.createEmptyBorder(3, 10, 3, 10));
         panel.add(etiquetaEstado, BorderLayout.WEST);
         add(panel, BorderLayout.SOUTH);
+    }
+
+    private boolean URLValido(File archivo) {
+        try {
+            String rutaA = archivo.getCanonicalPath();
+            String rutaRoot = carpetaOrigen.getCanonicalPath();
+            return rutaA.equals(rutaRoot) || rutaA.startsWith(rutaRoot + File.separator);
+        } catch (IOException e) {
+            return false;
+        }
     }
 }

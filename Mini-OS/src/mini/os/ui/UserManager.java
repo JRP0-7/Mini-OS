@@ -5,6 +5,7 @@ import java.security.NoSuchAlgorithmException;
 
 import mini.os.model.ListaEnlazada;
 import mini.os.core.GestorUser;
+import mini.os.error.ArchivoCorruptoException;
 import mini.os.error.UsuarioDuplicadoException;
 
 import javax.swing.DefaultListModel;
@@ -48,7 +49,7 @@ public class UserManager extends JInternalFrame {
 
             try {
                 GestorUser.crearUser(usuario, pass, admin);
-            } catch (NoSuchAlgorithmException | UsuarioDuplicadoException e1) {
+            } catch (NoSuchAlgorithmException | UsuarioDuplicadoException | ArchivoCorruptoException e1) {
                 JOptionPane.showMessageDialog(this, e1.getMessage());
                 return;
             }
@@ -57,28 +58,34 @@ public class UserManager extends JInternalFrame {
         });
 
         JButton btnEliminar = new JButton("Eliminar");
-        btnEliminar.addActionListener(e->{
+        btnEliminar.addActionListener(e -> {
             String seleccion = listaUsers.getSelectedValue();
-            if(seleccion==null){
+            if (seleccion == null) {
                 return;
             }
-            if(seleccion.equals("admin")){
+            if (seleccion.equals("admin")) {
                 JOptionPane.showMessageDialog(this, "No se puede borrar al administrador");
                 return;
             }
 
             int res = JOptionPane.showConfirmDialog(this, "Esta seguro de que desea eliminar el usuario?");
-            if(res==JOptionPane.YES_OPTION){
-                GestorUser.eliminarUsuario(seleccion);
+            if (res == JOptionPane.YES_OPTION) {
+                try {
+                    GestorUser.eliminarUsuario(seleccion);
+                } catch (ArchivoCorruptoException e1) {
+                    JOptionPane.showMessageDialog(this, e1.getMessage());
+                    return;
+                }
                 recargar();
-            }
-            else{
+            } else {
                 return;
             }
         });
 
         JButton btnRecargar = new JButton("Recargar");
-        btnRecargar.addActionListener(e->{recargar();});
+        btnRecargar.addActionListener(e -> {
+            recargar();
+        });
 
         panel.add(txtUser);
         panel.add(txtPass);
@@ -94,9 +101,15 @@ public class UserManager extends JInternalFrame {
 
     private void recargar() {
         modelo.clear();
-        ListaEnlazada<String> l = GestorUser.listarUsuarios();
-        for (int i = 0; i < l.getSize(); i++) {
-            modelo.addElement(l.get(i));
+        ListaEnlazada<String> l;
+        try {
+            l = GestorUser.listarUsuarios();
+            for (int i = 0; i < l.getSize(); i++) {
+                modelo.addElement(l.get(i));
+            }
+        } catch (ArchivoCorruptoException e) {
+            JOptionPane.showMessageDialog(this, "Error en la carga de los usuarios " + e.getMessage());
+
         }
     }
 

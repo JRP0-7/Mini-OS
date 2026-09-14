@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.security.NoSuchAlgorithmException;
 
 import mini.os.error.CuentaDesactivadaException;
 import mini.os.error.UsuarioDuplicadoException;

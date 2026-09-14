@@ -2,7 +2,6 @@ package mini.os.insta.ui;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.io.File;
 import java.io.IOException;
