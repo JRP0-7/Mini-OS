@@ -5,9 +5,12 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.NoSuchAlgorithmException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import mini.os.core.Sistema;
 import mini.os.error.UsuarioDuplicadoException;
+import mini.os.insta.model.gestorMensajes;
 import mini.os.insta.model.gestorPublicacion;
 import mini.os.model.ListaEnlazada;
 import mini.os.io.ArchivoUtil;
@@ -17,6 +20,9 @@ public class InstaServer {
     public static final String IROOT = pathRaiz();
     public static final int PORT = 1500;
     public static final gestorPublicacion gestorPub = new gestorPublicacion();
+    public static final gestorMensajes gestorMen = new gestorMensajes();
+    public static final Map<String, ManejoConexion> conexionesActivas = new ConcurrentHashMap<>();
+    
 
     public static String pathRaiz() {
         String cd = Sistema.ROOT + "/insta";
@@ -45,6 +51,10 @@ public class InstaServer {
 
     public static gestorPublicacion getGestorPub() {
         return gestorPub;
+    }
+
+    public static gestorMensajes getGestorMen(){
+        return gestorMen;
     }
 
     public static void main(String[] args) throws IOException {

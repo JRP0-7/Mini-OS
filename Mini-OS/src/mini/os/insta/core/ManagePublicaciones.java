@@ -8,7 +8,7 @@ import mini.os.io.ArchivoUtil;
 import mini.os.model.ListaEnlazada;
 
 public class ManagePublicaciones {
-    public static void guardar(Publicacion publi){
+    public synchronized static void guardar(Publicacion publi){
         File rPublicaciones = new File(InstaServer.IROOT + "/publicaciones.xr");
         ListaEnlazada<Publicacion> lista;
         if(!rPublicaciones.exists()){
@@ -21,7 +21,7 @@ public class ManagePublicaciones {
         ArchivoUtil.guardar(lista, rPublicaciones.getPath());
     }
 
-    public static ListaEnlazada<Publicacion> obtenerTimeLine(){
+    public synchronized static ListaEnlazada<Publicacion> obtenerTimeLine(){
         File archivo = new File(InstaServer.IROOT + "/publicaciones.xr");
         if(!archivo.exists()){
             return new ListaEnlazada<>();

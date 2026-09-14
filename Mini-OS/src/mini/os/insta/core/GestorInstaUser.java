@@ -11,7 +11,7 @@ import mini.os.io.Autentificacion;
 import mini.os.error.*;
 
 public class GestorInstaUser {
-    public static void registrar(String user, String pass, String nombre, char genero, int age, String rutaI)
+    public synchronized static void registrar(String user, String pass, String nombre, char genero, int age, String rutaI)
             throws UsuarioDuplicadoException, NoSuchAlgorithmException {
         ListaEnlazada<String> lista = ArchivoUtil.leer(InstaServer.IROOT + "/users.xr");
         if (lista.contiene(user)) {
@@ -44,7 +44,7 @@ public class GestorInstaUser {
         }
     }
 
-    public static InstaUser buscar(String nombre) {
+    public synchronized static InstaUser buscar(String nombre) {
         File folder = new File(InstaServer.IROOT, nombre);
         if (folder.exists()) {
             InstaUser usuario = ArchivoUtil.leer(rutaUsuario(nombre));
@@ -54,7 +54,7 @@ public class GestorInstaUser {
         }
     }
 
-    public static void seguir(String seguidor, String seguido) {
+    public synchronized static void seguir(String seguidor, String seguido) {
         InstaUser a = buscar(seguidor);
         InstaUser b = buscar(seguido);
         if (a == null || b == null) {

@@ -10,26 +10,30 @@ import java.util.Date;
 
 import mini.os.insta.model.Solicitud;
 import mini.os.error.UsuarioDuplicadoException;
+import mini.os.insta.model.MensajesDirectos;
 import mini.os.insta.model.Publicacion;
 import mini.os.insta.model.PublicacionDTO;
 import mini.os.insta.model.Respuesta;
 import mini.os.insta.model.SeguirDTO;
 import mini.os.insta.model.UserDTO;
+import mini.os.insta.model.chatDTO;
+import mini.os.insta.model.gestorMensajes;
 import mini.os.io.ArchivoUtil;
 import mini.os.model.InstaUser;
 import mini.os.model.ListaEnlazada;
 
 public class ManejoConexion implements Runnable {
     private Socket socket;
+    private String userActual;
 
     public ManejoConexion(Socket cliente) {
         this.socket = cliente;
     }
 
+    ObjectOutputStream salida = null;
+    ObjectInputStream entrada;
     public void run() {
 
-        ObjectOutputStream salida = null;
-        ObjectInputStream entrada;
 
         try {
             salida = new ObjectOutputStream(socket.getOutputStream());
@@ -41,6 +45,8 @@ public class ManejoConexion implements Runnable {
                         UserDTO dto = (UserDTO) soli.getDato();
                         try {
                             if (GestorInstaUser.login(dto.getUser(), dto.getPass()) != null) {
+                                userActual = dto.getUser();
+                                InstaServer.conexionesActivas.put(userActual, this);
                                 salida.writeObject(new Respuesta(true, "Login exitoso", null));
                             } else {
                                 salida.writeObject(new Respuesta(false, "Usuario o contraseña incorrectos", null));
@@ -100,14 +106,35 @@ public class ManejoConexion implements Runnable {
                     case VER_PERFIL:
                         String nombrePerfil = (String) soli.getDato();
                         InstaUser perfil = GestorInstaUser.buscar(nombrePerfil);
-                        if(perfil == null){
+                        if (perfil == null) {
                             salida.writeObject(new Respuesta(false, "Usuario no encontrado", null));
                         } else {
                             salida.writeObject(new Respuesta(true, "Perfil encontrado", perfil));
                         }
                         salida.flush();
-                         break;
+                        break;
+                    case ENVIAR_MENSAJE:
+                        chatDTO chatDTO = (chatDTO) soli.getDato();
+                        int id = InstaServer.getGestorMen().getCode();
+                        MensajesDirectos msg = new MensajesDirectos(id, chatDTO.getEmisor(), chatDTO.getReceptor(),
+                                chatDTO.getMsg(), chatDTO.isSticker());
+                        GestorMD.guardar(msg);
+                        ManejoConexion destino = InstaServer.conexionesActivas.get(chatDTO.getReceptor());
+                        if(destino!=null){
+                            destino.recibirMensaje(msg);
+                        }
+                        salida.writeObject(new Respuesta(true, "Mensaje Enviado", msg));
+                        salida.flush();
+                        break;
+                    case VER_MENSAJES:
+                        String userx = (String) soli.getDato();
+                        ListaEnlazada<MensajesDirectos> chat = GestorMD.obtenerChat(userActual, userx);
+                        salida.writeObject(new Respuesta(true, "Chat recuperado", chat));
+                        salida.flush();
+                        break;
                     default:
+                        salida.writeObject(new Respuesta(false, "Tipo de peticion no soportado", null)); 
+                        salida.flush();
                         break;
                 }
             }
@@ -119,7 +146,27 @@ public class ManejoConexion implements Runnable {
                 e1.printStackTrace();
             }
         }
+        finally{
+            if (userActual != null) {
+                InstaServer.conexionesActivas.remove(userActual);
+            }
+            try {
+                socket.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
     }
+
+    public void recibirMensaje(MensajesDirectos msg) throws IOException{
+        synchronized(salida){
+            salida.writeObject(new RecibirPush(msg));
+            salida.flush();
+        }
+    }
+
+
+
 
 }
