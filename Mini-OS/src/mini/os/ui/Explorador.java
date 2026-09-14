@@ -200,7 +200,7 @@ public class Explorador extends JInternalFrame {
                 NodoArchivos na = (NodoArchivos) seleccion.getUserObject();
                 File archivo = na.getArchivo();
                 String nombre = archivo.getName().toLowerCase();
-                if (!nombre.endsWith(".edt") && !nombre.endsWith(".txt")) {
+                if (!nombre.endsWith(".txt")) {
                     JOptionPane.showMessageDialog(this, "No se pudo abrir el archivo", "Error",
                             JOptionPane.ERROR_MESSAGE);
                     return;

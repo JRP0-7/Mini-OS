@@ -20,8 +20,6 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import mini.os.docs.persistencia.Documento;
 import mini.os.docs.persistencia.EdtException;
 import mini.os.docs.persistencia.PersistenciaEDT;
@@ -63,7 +61,7 @@ public class EditorTexto extends JInternalFrame {
     public EditorTexto(File carpeta) {
         super("Bloc de Notas", true, true, true, true);
         setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
-        setSize(1000, 750);
+        setSize(1000, 450);
         // setLocationRelativeTo(null);
         comboFuente = new JComboBox<>(gestorFuentes.obtenerNombres());
         seleccionarFuenteInicial();
