@@ -19,6 +19,8 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import mini.os.docs.persistencia.Documento;
 import mini.os.docs.persistencia.EdtException;
 import mini.os.docs.persistencia.PersistenciaEDT;
@@ -142,6 +144,26 @@ public class EditorTexto extends JInternalFrame {
             return;
         }
         File archivo = selector.getSelectedFile();
+        if (archivo.getName().toLowerCase().endsWith(".txt")) {
+            abrirPlano(archivo);
+        } else {
+            abrirEDT(archivo);
+        }
+    }
+
+    private void abrirPlano(File archivo) {
+        try {
+            String contenido = new String(Files.readAllBytes(archivo.toPath()), StandardCharsets.UTF_8);
+            textPane.setText(contenido);
+            archivoActual = archivo;
+            setTitle("Bloc de Notas - " + archivo.getName());
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(),
+                    "No se pudo abrir", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void abrirEDT(File archivo) {
         try {
             Documento documento = PersistenciaEDT.abrir(archivo);
 
@@ -169,29 +191,10 @@ public class EditorTexto extends JInternalFrame {
 
     public void abrirDirecto(File select) {
         if (select != null) {
-            File archivo = select;
-            try {
-                Documento documento = PersistenciaEDT.abrir(archivo);
-
-                PersistenciaEDT.aplicarA(documento, textPane.getStyledDocument());
-
-                java.util.ArrayList<TablaDoc> tablas = new java.util.ArrayList<>();
-                for (Tabla t : documento.getTablas()) {
-                    TablaDoc td = new TablaDoc(t.getPosicion(), t.getFilas(), t.getColumnas());
-                    for (int f = 0; f < t.getFilas(); f++) {
-                        for (int c = 0; c < t.getColumnas(); c++) {
-                            td.setDato(f, c, t.getCelda(f, c));
-                        }
-                    }
-                    tablas.add(td);
-                }
-                gestorTablas.aplicar(tablas, textPane);
-
-                archivoActual = archivo;
-                setTitle("Bloc de Notas - " + archivo.getName());
-            } catch (EdtException | BadLocationException | IOException e) {
-                JOptionPane.showMessageDialog(this, e.getMessage(),
-                        "No se pudo abrir", JOptionPane.ERROR_MESSAGE);
+            if (select.getName().toLowerCase().endsWith(".txt")) {
+                abrirPlano(select);
+            } else {
+                abrirEDT(select);
             }
         }
     }
@@ -211,13 +214,18 @@ public class EditorTexto extends JInternalFrame {
         }
         File archivo = selector.getSelectedFile();
 
-        if (!archivo.getName().toLowerCase().endsWith(".edt")) {
+        String nombre = archivo.getName().toLowerCase();
+        if (!nombre.endsWith(".edt") && !nombre.endsWith(".txt")) {
             archivo = new File(archivo.getParentFile(), archivo.getName() + ".edt");
         }
         guardarEn(archivo);
     }
 
     private void guardarEn(File archivo) {
+        if (archivo.getName().toLowerCase().endsWith(".txt")) {
+            guardarPlano(archivo);
+            return;
+        }
         try {
             Documento documento = PersistenciaEDT.desdeStyledDocument(textPane.getStyledDocument());
 
@@ -242,10 +250,21 @@ public class EditorTexto extends JInternalFrame {
         }
     }
 
+    private void guardarPlano(File archivo) {
+        try {
+            Files.write(archivo.toPath(), textPane.getText().getBytes(StandardCharsets.UTF_8));
+            archivoActual = archivo;
+            setTitle("Bloc de Notas - " + archivo.getName());
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(),
+                    "No se pudo guardar", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     private JFileChooser crearSelector() {
         JFileChooser selector = new JFileChooser();
         selector.setCurrentDirectory(carpetaOrigen);
-        selector.setFileFilter(new FileNameExtensionFilter("Documento del editor (*.edt)", "edt"));
+        selector.setFileFilter(new FileNameExtensionFilter("Documento del editor (*.edt, *.txt)", "edt", "txt"));
         return selector;
     }
 

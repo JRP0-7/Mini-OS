@@ -81,6 +81,16 @@ public class CatalogoMusical {
         return null;
     }
 
+    public int buscarRegistro(String nombre) throws IOException{
+        long tamaño = mReg.length()/tamañoR;
+        for (int i = 0; i < tamaño; i++) {
+            if (leer(i).getNombre().equals(nombre)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public int tRegistros() throws IOException{
         return (int) (mReg.length()/tamañoR);
     }

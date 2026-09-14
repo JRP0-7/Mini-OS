@@ -19,6 +19,10 @@ public class InfoCancion {
         return descripcion;
     }
 
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
     public String getRutaImagen() {
         return rutaImagen;
     }

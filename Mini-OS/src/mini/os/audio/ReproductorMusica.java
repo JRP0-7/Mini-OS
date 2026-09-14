@@ -41,7 +41,7 @@ public class ReproductorMusica extends JInternalFrame {
     ArrayList<File> portadas = new ArrayList<>();
 
     public ReproductorMusica(File raiz) throws IOException, BasicPlayerException {
-        super("Reproductor de Music", true, true, true, true);
+        super("Reproductor de Música", true, true, true, true);
         setSize(800, 700);
         addInternalFrameListener(new InternalFrameAdapter() {
             public void internalFrameClosing(InternalFrameEvent e){

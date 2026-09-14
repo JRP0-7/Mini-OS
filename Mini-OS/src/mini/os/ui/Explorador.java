@@ -210,7 +210,8 @@ public class Explorador extends JInternalFrame {
             } else {
                 NodoArchivos na = (NodoArchivos) seleccion.getUserObject();
                 File archivo = na.getArchivo();
-                if (!archivo.getName().toLowerCase().endsWith(".edt")) {
+                String nombre = archivo.getName().toLowerCase();
+                if (!nombre.endsWith(".edt") && !nombre.endsWith(".txt")) {
                     JOptionPane.showMessageDialog(this, "No se pudo abrir el archivo", "Error",
                             JOptionPane.ERROR_MESSAGE);
                     return;
@@ -361,7 +362,7 @@ public class Explorador extends JInternalFrame {
             String nombre = na.getArchivo().getName().toLowerCase();
             if (nombre.endsWith(".jpg") || nombre.endsWith(".jpeg") || nombre.endsWith(".png")) {
                 verImage.setVisible(true);
-            } else if (nombre.endsWith(".edt")) {
+            } else if (nombre.endsWith(".edt") || nombre.endsWith(".txt")) {
                 verDoc.setVisible(true);
             } else if (nombre.endsWith(".mp3")) {
                 verMusica.setVisible(true);
