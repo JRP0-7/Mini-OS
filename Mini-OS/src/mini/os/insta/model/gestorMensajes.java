@@ -7,7 +7,7 @@ import java.io.RandomAccessFile;
 import mini.os.core.Sistema;
 
 public class gestorMensajes {
-    private RandomAccessFile rMen;
+    private static RandomAccessFile rMen;
     
     public gestorMensajes(){
         try {
@@ -28,7 +28,7 @@ public class gestorMensajes {
         }
     }
 
-    public int getCode() throws IOException{
+    public synchronized int getCode() throws IOException{
         rMen.seek(0);
         int xnum = rMen.readInt();
         rMen.seek(0);

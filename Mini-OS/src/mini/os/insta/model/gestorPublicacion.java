@@ -28,7 +28,7 @@ public class gestorPublicacion {
         }
     }
 
-    public int getCode() throws IOException{
+    public synchronized int getCode() throws IOException{
         rPub.seek(0);
         int xnum = rPub.readInt();
         rPub.seek(0);

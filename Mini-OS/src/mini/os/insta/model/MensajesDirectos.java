@@ -11,6 +11,7 @@ public class MensajesDirectos implements Serializable{
     private String contenido;
     private Date fechaE;
     private boolean leido;
+    private boolean sticker=false;
 
     public MensajesDirectos(int id, String em, String rec, String msg){
         this.id=id;
@@ -20,6 +21,15 @@ public class MensajesDirectos implements Serializable{
         this.fechaE= new Date();
         this.leido=false;
     }
+
+    
+
+    public MensajesDirectos(int id, String emisor, String receptor, String contenido, boolean sticker) {
+        this(id, emisor, receptor, contenido);
+        this.sticker = sticker;
+    }
+
+
 
     public int getId() {
         return id;
@@ -48,5 +58,13 @@ public class MensajesDirectos implements Serializable{
     public void fueLeido(){
         leido=true;
     }
+
+
+
+    public boolean isSticker() {
+        return sticker;
+    }
+
+    
     
 }
