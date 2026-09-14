@@ -12,6 +12,7 @@ import javazoom.jlgui.basicplayer.BasicPlayer;
 import javazoom.jlgui.basicplayer.BasicPlayerException;
 
 import javax.imageio.ImageIO;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -59,14 +60,21 @@ public class ReproductorMusica extends JInternalFrame {
         cm = new CatalogoMusical(raiz);
         refresh();
 
-        JLabel iCancion = new JLabel("Seleccione una cancion para comenzar a reproductir");
-        add(iCancion, BorderLayout.NORTH);
+        JLabel iCancion = new JLabel("Seleccione una canción para comenzar a reproducir");
+        JLabel iDescripcion = new JLabel(" ");
+        JPanel pInfo = new JPanel();
+        pInfo.setLayout(new BoxLayout(pInfo, BoxLayout.Y_AXIS));
+        pInfo.add(iCancion);
+        pInfo.add(iDescripcion);
+        add(pInfo, BorderLayout.NORTH);
 
         lista.setModel(modelo);
         lista.addListSelectionListener(e -> {
             indiceA = lista.getSelectedIndex();
             if (indiceA != -1) {
-                iCancion.setText("Informacion de Cancion: " + informacion.get(indiceA).getNombre());
+                iCancion.setText("Información de canción: " + informacion.get(indiceA).getNombre());
+                String descripcion = informacion.get(indiceA).getDescripcion();
+                iDescripcion.setText(descripcion.isEmpty() ? "(Sin descripción)" : "Descripción: " + descripcion);
                 String rutaImagen = informacion.get(indiceA).getRutaImagen();
                 if (!rutaImagen.isEmpty()) {
                     File careta = new File(raiz.getParentFile(), "Images/Portadas/"+rutaImagen);
@@ -80,24 +88,29 @@ public class ReproductorMusica extends JInternalFrame {
                 }
             } else {
                 iCancion.setIcon(null);
+                iDescripcion.setText(" ");
             }
         });
 
         JPanel pBotones = new JPanel();
-        JButton btnPlay = new JButton("Reproductir");
+        JButton btnPlay = new JButton("Reproducir");
         btnPlay.addActionListener(e -> {
             if (indiceA != -1 && indiceA < canciones.size()) {
-                try {
-                    player.open(canciones.get(indiceA));
-                    player.play();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            } else {
+                int indice = indiceA;
+                Thread t = new Thread(() -> {
+                    try {
+                        player.open(canciones.get(indice));
+                        player.play();
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                });
+                t.setDaemon(true);
+                t.start();
             }
         });
 
-        JButton btnPausar = new JButton("Pauar");
+        JButton btnPausar = new JButton("Pausar");
         btnPausar.addActionListener(e -> {
             try {
                 player.pause();
@@ -115,7 +128,7 @@ public class ReproductorMusica extends JInternalFrame {
             }
         });
 
-        JButton btnAdicionar = new JButton("Adicionar Nueva Cancion");
+        JButton btnAdicionar = new JButton("Adicionar Nueva Canción");
         btnAdicionar.addActionListener(e -> {
             try {
                 agregarCancion();
@@ -124,12 +137,37 @@ public class ReproductorMusica extends JInternalFrame {
             }
         });
 
+        JButton btnDescripcion = new JButton("Editar Descripción");
+        btnDescripcion.addActionListener(e -> {
+            if (indiceA == -1 || indiceA >= informacion.size()) {
+                JOptionPane.showMessageDialog(this, "Seleccione una canción primero");
+                return;
+            }
+            InfoCancion cancion = informacion.get(indiceA);
+            String nueva = JOptionPane.showInputDialog(this, "Descripción de la canción:", cancion.getDescripcion());
+            if (nueva == null || nueva.trim().isEmpty()) {
+                return;
+            }
+            nueva = nueva.trim();
+            cancion.setDescripcion(nueva);
+            try {
+                int reg = cm.buscarRegistro(cancion.getNombre());
+                if (reg >= 0) {
+                    cm.guardar(reg, cancion.getNombre(), nueva, cancion.getRutaImagen());
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            iDescripcion.setText("Descripción: " + nueva);
+        });
+
         add(new JScrollPane(lista), BorderLayout.CENTER);
 
         pBotones.add(btnPlay);
         pBotones.add(btnPausar);
         pBotones.add(btnDetener);
         pBotones.add(btnAdicionar);
+        pBotones.add(btnDescripcion);
         add(pBotones, BorderLayout.SOUTH);
 
     }
