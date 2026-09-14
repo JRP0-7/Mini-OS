@@ -12,7 +12,7 @@ public class gestorPublicacion {
     public gestorPublicacion() {
         try {
             File raiz = new File(Sistema.ROOT, "/insta");
-            raiz.mkdir();
+            raiz.mkdirs();
 
             rPub = new RandomAccessFile(new File(raiz, "idPublicacion.xr"), "rw");
             iniciar();
@@ -28,7 +28,8 @@ public class gestorPublicacion {
         }
     }
 
-    public synchronized int getCode() throws IOException{
+    public int getCode() throws IOException{
+        if (rPub == null) throw new IOException("Archivo de IDs de publicacion no disponible");
         rPub.seek(0);
         int xnum = rPub.readInt();
         rPub.seek(0);

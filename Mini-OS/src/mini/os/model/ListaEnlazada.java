@@ -91,6 +91,25 @@ public class ListaEnlazada<T> implements Serializable{
         return aux.getInfo();
     }
 
+    public void agregarEn(int indice, T dato){
+        if(indice < 0 || indice > size){
+            return;
+        }
+        Nodo<T> nuevo = new Nodo<T>(dato);
+        if(indice == 0){
+            nuevo.setNext(cabeza);
+            cabeza = nuevo;
+        } else {
+            Nodo<T> actual = cabeza;
+            for (int i = 0; i < indice - 1; i++) {
+                actual = actual.getNext();
+            }
+            nuevo.setNext(actual.getNext());
+            actual.setNext(nuevo);
+        }
+        size++;
+    }
+
     
 
     //public void eliminar beta

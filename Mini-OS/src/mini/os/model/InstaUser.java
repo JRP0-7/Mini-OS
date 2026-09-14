@@ -62,6 +62,10 @@ public class InstaUser extends Users{
         this.activo = activo;
     }
 
+    public void setRutaI(String rutaI) {
+        this.rutaI = rutaI;
+    }
+
     public void agregarSeguidor(String seguidor) {
         if(seguidores.contiene(seguidor)){
             return;

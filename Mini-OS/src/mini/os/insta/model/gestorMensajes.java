@@ -7,12 +7,12 @@ import java.io.RandomAccessFile;
 import mini.os.core.Sistema;
 
 public class gestorMensajes {
-    private static RandomAccessFile rMen;
+    private RandomAccessFile rMen;
     
     public gestorMensajes(){
         try {
             File raiz = new File(Sistema.ROOT, "/insta");
-            raiz.mkdir();
+            raiz.mkdirs();
 
             rMen = new RandomAccessFile(new File(raiz, "idMensajes.xr"), "rw");
             iniciar();
@@ -28,7 +28,8 @@ public class gestorMensajes {
         }
     }
 
-    public synchronized int getCode() throws IOException{
+    public int getCode() throws IOException{
+        if (rMen == null) throw new IOException("Archivo de IDs de mensajes no disponible");
         rMen.seek(0);
         int xnum = rMen.readInt();
         rMen.seek(0);

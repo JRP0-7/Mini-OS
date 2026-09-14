@@ -15,6 +15,8 @@ import mini.os.audio.ReproductorMusica;
 import mini.os.console.Consola;
 import mini.os.core.Sistema;
 import mini.os.docs.Editor;
+import mini.os.insta.core.InstaServer;
+import mini.os.insta.ui.InstaFrame;
 import mini.os.model.SystemUser;
 
 // El escritorio principal que ve el usuario después de loguearse
@@ -65,6 +67,13 @@ public class Escritorio extends JFrame{
             abrir(Consola.abrir(FolderUser));
         });
 
+        JMenuItem btnInsta = new JMenuItem("INSTA+");
+        btnInsta.addActionListener(e->{
+            InstaServer.iniciar();
+            InstaServer.iniciarServidorEnSegundoPlano();
+            new InstaFrame().setVisible(true);
+        });
+
         JMenuItem btnGestion  = new JMenuItem("Gestion de Usuarios");
         btnGestion.addActionListener(e->{
             abrir(new UserManager());
@@ -82,6 +91,7 @@ public class Escritorio extends JFrame{
         barraTareas.add(btnVisualizador);
         barraTareas.add(btnReproductor);
         barraTareas.add(btnConsola);
+        barraTareas.add(btnInsta);
 
         if(usuario.isAdmin()){
             barraTareas.add(btnGestion);
