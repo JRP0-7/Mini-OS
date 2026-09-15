@@ -7,16 +7,22 @@ import java.awt.Font;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
+// Visor que permite recorrer las imágenes de una carpeta.
 public class VisorImagenes extends JInternalFrame {
 
     private static final Color FONDO = new Color(0x111111);
@@ -32,6 +38,8 @@ public class VisorImagenes extends JInternalFrame {
     private final JLabel NImagen = new JLabel("", SwingConstants.CENTER);
     private final JButton btnAnterior = new JButton("< Anterior");
     private final JButton btnSiguiente = new JButton("Siguiente >");
+    private final JButton btnAgregar = new JButton("Agregar imagen");
+    private File raiz;
 
     public VisorImagenes(File raiz) {
         super("Visualizador de Imagenes", true, true, true, true);
@@ -41,6 +49,7 @@ public class VisorImagenes extends JInternalFrame {
         getContentPane().setBackground(FONDO);
         getContentPane().setLayout(new BorderLayout());
 
+        this.raiz = raiz;
         filtrar(raiz);
 
         NImagen.setForeground(TEXTO);
@@ -56,10 +65,13 @@ public class VisorImagenes extends JInternalFrame {
         pbotones.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         estilizar(btnAnterior);
         estilizar(btnSiguiente);
+        estilizar(btnAgregar);
         btnAnterior.addActionListener(e -> mover(-1));
         btnSiguiente.addActionListener(e -> mover(1));
+        btnAgregar.addActionListener(e -> agregarImagen());
         pbotones.add(btnAnterior);
         pbotones.add(btnSiguiente);
+        pbotones.add(btnAgregar);
         add(pbotones, BorderLayout.SOUTH);
 
         refrescar();
@@ -81,6 +93,29 @@ public class VisorImagenes extends JInternalFrame {
         }
         indiceActual = nuevo;
         refrescar();
+    }
+
+    // Copia una imagen del disco hacia la carpeta que este visor esta mostrando
+    private void agregarImagen() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileFilter(new FileNameExtensionFilter("Imágenes (*.png, *.jpg, *.jpeg)", "png", "jpg", "jpeg"));
+        if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        File origen = chooser.getSelectedFile();
+        File destino = new File(raiz, origen.getName());
+        try {
+            if (destino.exists()) {
+                JOptionPane.showMessageDialog(this, "Ya existe una imagen con ese nombre en esta carpeta");
+                return;
+            }
+            Files.copy(origen.toPath(), destino.toPath(), StandardCopyOption.COPY_ATTRIBUTES);
+            imagenes.add(destino);
+            indiceActual = imagenes.size() - 1;
+            refrescar();
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "No se pudo agregar la imagen: " + ex.getMessage());
+        }
     }
 
     // Abre una imagen concreta seleccionada desde el Explorador

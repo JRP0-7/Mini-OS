@@ -25,7 +25,7 @@ public class PersistenciaEDT {
     // Formato del archivo: cabecera, runs, tablas y CRC.
 
     public static void guardar(Documento documento, File archivo) throws EdtException, IOException {
-        if (!archivo.getName().toLowerCase().endsWith(".edt")) {
+        if (!archivo.getName().toLowerCase().endsWith(".txt")) {
             throw new EdtException.ExtensionInvalida(archivo.getName());
         }
 
@@ -78,7 +78,7 @@ public class PersistenciaEDT {
     }
 
     public static Documento abrir(File archivo) throws EdtException, IOException {
-        if (!archivo.getName().toLowerCase().endsWith(".edt")) {
+        if (!archivo.getName().toLowerCase().endsWith(".txt")) {
             throw new EdtException.ExtensionInvalida(archivo.getName());
         }
         if (!archivo.exists()) {
