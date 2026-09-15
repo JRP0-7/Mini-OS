@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JComboBox;
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
@@ -19,6 +20,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -50,6 +52,7 @@ public class Explorador extends JInternalFrame {
         DefaultMutableTreeNode NRaiz = crearNodo(raiz, 0);
         JTree arbol = new JTree(NRaiz);
 
+        JLabel barraUbicacion = new JLabel(" ");
         // JComboBox ordenar = new JCombo("Ordenar");
         // El combo para elegir cómo ordenar los archivos
         String opciones[] = { "Por Nombre", "Por fecha de Modificacion", "Tamaño", "Tipo" };
@@ -343,22 +346,36 @@ public class Explorador extends JInternalFrame {
         });
 
         JScrollPane lista = new JScrollPane(arbol);
+        
+        // add(barraUbicacion, BorderLayout.SOUTH);
 
-        JPanel pBotones = new JPanel();
+        JPanel pSuperior= new JPanel(new BorderLayout());
+
+        JToolBar pBotones = new JToolBar();
+        pBotones.add(recargar);
+        pBotones.add(campoBusqueda);
+        pBotones.add(btnBuscar);
+
+        pBotones.addSeparator();
         pBotones.add(btnNArchivo);
         pBotones.add(btnNCarpeta);
         pBotones.add(btnEliminar);
         pBotones.add(ordenar);
         pBotones.add(surtir);
+        
+        pBotones.addSeparator();
         pBotones.add(renombrar);
         pBotones.add(copiar);
         pBotones.add(pegar);
-        pBotones.add(recargar);
+        
+        pBotones.addSeparator();
         pBotones.add(verImage);
         pBotones.add(verDoc);
         pBotones.add(verMusica);
-        pBotones.add(campoBusqueda);
-        pBotones.add(btnBuscar);
+
+        pSuperior.add(pBotones, BorderLayout.NORTH);
+        pSuperior.add(barraUbicacion, BorderLayout.SOUTH);
+
 
         // Solo mostramos el boton que corresponde a la extension del archivo
         // seleccionado
@@ -379,6 +396,7 @@ public class Explorador extends JInternalFrame {
             copiar.setVisible(true);
             NodoArchivos na = (NodoArchivos) select.getUserObject();
             String nombre = na.getArchivo().getName().toLowerCase();
+            barraUbicacion.setText(na.getArchivo().getAbsolutePath());
             if (nombre.endsWith(".jpg") || nombre.endsWith(".jpeg") || nombre.endsWith(".png")) {
                 verImage.setVisible(true);
             } else if (nombre.endsWith(".edt") || nombre.endsWith(".txt")) {
@@ -390,7 +408,7 @@ public class Explorador extends JInternalFrame {
             pBotones.repaint();
         });
 
-        add(pBotones, BorderLayout.NORTH);
+        add(pSuperior, BorderLayout.NORTH);
         add(lista, BorderLayout.CENTER);
 
     }

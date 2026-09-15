@@ -235,13 +235,18 @@ public class ManejoConexion implements Runnable {
                         break;
                 }
             }
-        } catch (ClassNotFoundException | IOException | ArchivoCorruptoException e) {
+        } catch (ClassNotFoundException | ArchivoCorruptoException e) {
+            // Estos errores son de datos/protocolo, el socket sigue vivo: le avisamos al cliente
             try {
                 salida.writeObject(new Respuesta(false, "Error de conexion: " + e.getMessage(), null));
                 salida.flush();
             } catch (IOException e1) {
-                e1.printStackTrace();
+                // el cliente ya se desconecto mientras intentabamos responder, no hay nada mas que hacer
             }
+        } catch (IOException e) {
+            // El cliente cerro la conexion (cerro la app, se cayo la red, etc).
+            // No intentamos escribir de vuelta porque el socket ya esta muerto: eso es justo
+            // lo que causaba el SocketException "anulado por el software en su equipo host".
         } finally{
             try{
                 socket.close();

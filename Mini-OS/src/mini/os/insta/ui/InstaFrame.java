@@ -20,7 +20,7 @@ public class InstaFrame extends JInternalFrame {
 
     public InstaFrame() {
         super("INSTA+", true, true, true, true);
-        setSize(1000, 650);
+        setSize(900, 650);
         setLocation(50,50);
         setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
 

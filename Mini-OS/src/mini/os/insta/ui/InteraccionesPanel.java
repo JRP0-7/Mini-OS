@@ -1,15 +1,18 @@
 package mini.os.insta.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
 import java.io.IOException;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
+import mini.os.design.AccentButton;
 import mini.os.insta.core.InstaClient;
 import mini.os.insta.model.Publicacion;
 import mini.os.model.ListaEnlazada;
@@ -25,16 +28,23 @@ public class InteraccionesPanel extends JPanel {
         this.user = user;
 
         setLayout(new BorderLayout());
+        setBackground(Color.WHITE);
 
         JPanel barra = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
-        JButton btnRefrescar = new JButton("Refrescar");
+        barra.setBackground(Color.WHITE);
+        barra.setBorder(BorderFactory.createEmptyBorder(12, 12, 0, 12));
+        AccentButton btnRefrescar = new AccentButton("Refrescar");
         btnRefrescar.addActionListener(e -> refrescar());
         barra.add(btnRefrescar);
         add(barra, BorderLayout.NORTH);
 
         lista = new JPanel();
+        lista.setBackground(Color.WHITE);
+        lista.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
         lista.setLayout(new BoxLayout(lista, BoxLayout.Y_AXIS));
-        add(new JScrollPane(lista), BorderLayout.CENTER);
+        JScrollPane scroll = new JScrollPane(lista);
+        scroll.setBorder(BorderFactory.createEmptyBorder());
+        add(scroll, BorderLayout.CENTER);
     }
 
     public void refrescar() {
@@ -42,7 +52,10 @@ public class InteraccionesPanel extends JPanel {
         try {
             ListaEnlazada<Publicacion> pubs = cliente.interacciones(user);
             if (pubs.getSize() == 0) {
-                lista.add(new JLabel("Nadie te ha mencionado todavía. Tus menciones (@username) aparecerán aquí."));
+                JLabel vacio = new JLabel("Nadie te ha mencionado todavía. Tus menciones (@username) aparecerán aquí.");
+                vacio.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+                vacio.setForeground(Color.decode("#8A867C"));
+                lista.add(vacio);
             }
             for (int i = 0; i < pubs.getSize(); i++) {
                 JPanel p = UtilInstaUI.panelPublicacion(pubs.get(i));

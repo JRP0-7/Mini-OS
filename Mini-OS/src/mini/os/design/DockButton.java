@@ -13,6 +13,7 @@ import javax.swing.JButton;
 
 public class DockButton extends JButton {
     private Image icono;
+    private Color color;
 
     public DockButton(String texto) {
         super(texto);
@@ -22,10 +23,27 @@ public class DockButton extends JButton {
         setForeground(Color.WHITE);
         setPreferredSize(new Dimension(55, 55));
         setOpaque(false);
+        this.color= Color.decode("#4E7C59");
     }
 
     public DockButton(String texto, String rutaI) {
         this(texto);
+        this.color= Color.decode("#4E7C59");
+        URL link = getClass().getResource(rutaI);
+        if(link!=null){
+            icono = new ImageIcon(link).getImage();
+            setText("");
+        }
+    }
+
+    public DockButton(String texto, Color color) {
+        this(texto);
+        this.color=color;
+    }
+    
+    public DockButton(String texto, Color color, String rutaI) {
+        this(texto);
+        this.color=color;
         URL link = getClass().getResource(rutaI);
         if(link!=null){
             icono = new ImageIcon(link).getImage();
@@ -38,7 +56,7 @@ public class DockButton extends JButton {
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        g2d.setColor(Color.decode("#4E7C59"));
+        g2d.setColor(color);
         int diametro = Math.min(getWidth(), getHeight());
         g2d.fillOval(0, 0, diametro, diametro);
 
@@ -48,5 +66,6 @@ public class DockButton extends JButton {
         }
         super.paintComponent(g);
     }
+
 
 }

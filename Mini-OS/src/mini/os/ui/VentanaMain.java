@@ -1,6 +1,7 @@
 package mini.os.ui;
 
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicPasswordFieldUI;
 import javax.swing.plaf.basic.BasicTextFieldUI;
 
 import mini.os.core.GestorUser;
@@ -52,7 +53,7 @@ public class VentanaMain extends JFrame {
 
         JLabel lblContra = new JLabel("Contraseña:");
         JPasswordField txtContra = new JPasswordField(15);
-        txtContra.setUI(new BasicTextFieldUI());
+        txtContra.setUI(new BasicPasswordFieldUI());
         txtContra.setOpaque(false);
         txtContra.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 0, 2, 0, Color.decode("#E4E0D6")),

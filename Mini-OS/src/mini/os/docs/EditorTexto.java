@@ -61,8 +61,7 @@ public class EditorTexto extends JInternalFrame {
     public EditorTexto(File carpeta) {
         super("Bloc de Notas", true, true, true, true);
         setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
-        setSize(1000, 450);
-        // setLocationRelativeTo(null);
+        setSize(850, 450);
         comboFuente = new JComboBox<>(gestorFuentes.obtenerNombres());
         seleccionarFuenteInicial();
         construirMenu();

@@ -4,15 +4,18 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridLayout;
 
 import javax.swing.BorderFactory;
-import javax.swing.JButton;
+import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import mini.os.design.GradientPanel;
+import mini.os.design.SidebarButton;
 import mini.os.insta.core.InstaClient;
 
 public class MainPanel extends JPanel {
@@ -23,7 +26,7 @@ public class MainPanel extends JPanel {
     private CardLayout layout;
     private JPanel contenido;
     private JLabel lblNoti;
-    private JButton btnInbox;
+    private SidebarButton btnInbox;
     private volatile boolean detener;
 
     private PerfilPanel perfil;
@@ -40,38 +43,48 @@ public class MainPanel extends JPanel {
         this.cliente = c;
         this.user = user;
 
+        GradientPanel fondo = new GradientPanel("#054C76", "#0C192A", "#471C3A");
+        fondo.setLayout(new BorderLayout());
         setLayout(new BorderLayout());
+        add(fondo, BorderLayout.CENTER);
 
         JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        top.setBackground(Color.WHITE);
+        top.setOpaque(false);
         lblNoti = new JLabel("Mensajes nuevos: 0");
+        lblNoti.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblNoti.setForeground(Color.WHITE);
         lblNoti.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
         top.add(lblNoti);
-        add(top, BorderLayout.NORTH);
+        fondo.add(top, BorderLayout.NORTH);
 
         String[] nombres = {"Perfil", "Cargar imagenes", "Comentarios", "Interacciones",
                 "Buscar Profile", "Buscar Hashtag", "Inbox", "Editar perfil", "Cerrar sesion"};
         String[] claves = {"perfil", "publicar", "timeline", "interacciones",
                 "buscar", "hashtag", "inbox", "editar", "cerrar"};
 
-        JPanel lado = new JPanel(new GridLayout(0, 1, 4, 4));
-        lado.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JPanel lado = new JPanel(new GridLayout(0, 1, 6, 6));
+        lado.setOpaque(false);
+        lado.setBorder(BorderFactory.createEmptyBorder(16, 12, 16, 12));
+        ButtonGroup grupo = new ButtonGroup();
         for (int i = 0; i < nombres.length; i++) {
             String clave = claves[i];
             String nombre = nombres[i];
-            JButton btn = new JButton(nombre);
+            SidebarButton btn = new SidebarButton(nombre);
             if (clave.equals("cerrar")) {
                 btn.addActionListener(e -> confirmarCerrarSesion());
             } else {
                 btn.addActionListener(e -> mostrar(clave));
+                grupo.add(btn);
             }
             if (clave.equals("inbox")) {
                 btnInbox = btn;
             }
-            btn.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+            if (clave.equals("perfil")) {
+                btn.setSelected(true);
+            }
             lado.add(btn);
         }
-        add(lado, BorderLayout.WEST);
+        fondo.add(lado, BorderLayout.WEST);
 
         layout = new CardLayout();
         contenido = new JPanel(layout);
@@ -94,7 +107,7 @@ public class MainPanel extends JPanel {
         contenido.add(inbox, "inbox");
         contenido.add(editar, "editar");
 
-        add(contenido, BorderLayout.CENTER);
+        fondo.add(contenido, BorderLayout.CENTER);
         layout.show(contenido, "perfil");
 
         iniciarNotificador();
