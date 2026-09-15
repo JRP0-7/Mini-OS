@@ -27,6 +27,7 @@ import mini.os.io.Autentificacion;
 import mini.os.model.InstaUser;
 import mini.os.model.ListaEnlazada;
 
+// Contiene las operaciones de negocio y persistencia de INSTA+.
 public class ServicioInsta {
 
     private static final String[] STICKERS_DEFECTO = {"Feliz.png", "Triste.png", "Corazon.png", "Risa.png", "Aplauso.png"};
@@ -95,6 +96,7 @@ public class ServicioInsta {
         guardarNombres(new File(carpeta(user), "stickers.ins"), lista);
     }
 
+    // EXCEPCIONES + ARCHIVOS BINARIOS: inicializa carpetas y registros, propagando corrupción de datos.
     public static synchronized void inicializarDatos() throws ArchivoCorruptoException {
         File raiz = new File(InstaServer.IROOT);
         raiz.mkdirs();
@@ -320,6 +322,7 @@ public class ServicioInsta {
         return ordenarDesc(resultado);
     }
 
+    // LISTA ENLAZADA SIMPLE: agrega publicaciones al resultado evitando colecciones externas.
     private static void agregarPublicacionesDe(ListaEnlazada<Publicacion> resultado, String autor) throws ArchivoCorruptoException {
         if (!esActiva(autor)) return;
         ListaEnlazada<Publicacion> pubs = leerPublicaciones(autor);
@@ -328,6 +331,7 @@ public class ServicioInsta {
         }
     }
 
+    // LISTA ENLAZADA SIMPLE: recorre los nodos para comprobar el ID antes de insertar.
     private static void agregarSinDuplicar(ListaEnlazada<Publicacion> resultado, Publicacion p) {
         for (int i = 0; i < resultado.getSize(); i++) {
             if (resultado.get(i).getId() == p.getId()) return;
@@ -335,6 +339,7 @@ public class ServicioInsta {
         resultado.agregar(p);
     }
 
+    // LISTA ENLAZADA SIMPLE: inserta cada publicación en su posición cronológica.
     private static ListaEnlazada<Publicacion> ordenarDesc(ListaEnlazada<Publicacion> lista) {
         ListaEnlazada<Publicacion> ordenada = new ListaEnlazada<>();
         for (int i = 0; i < lista.getSize(); i++) {
@@ -440,6 +445,20 @@ public class ServicioInsta {
             }
         }
         guardarUsuarios(lista);
+    }
+
+    // Reactiva una cuenta desactivada verificando la contraseña (el usuario todavia no esta
+    // logeado en este punto, por eso valida con la contraseña en vez de con esLogeado)
+    public static synchronized InstaUser reactivar(String user, String pass)
+            throws NoSuchAlgorithmException, ArchivoCorruptoException {
+        InstaUser u = buscar(user);
+        if (u == null) return null;
+        if (!u.getPassword().equals(Autentificacion.hash(pass))) return null;
+        if (!u.isActivo()) {
+            activarDesactivar(user, true);
+            u.setActivo(true);
+        }
+        return u;
     }
 
     public static synchronized String cambiarFoto(String user, String nuevaRuta) throws ArchivoCorruptoException {

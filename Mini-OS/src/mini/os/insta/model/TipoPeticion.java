@@ -1,5 +1,6 @@
 package mini.os.insta.model;
 
+// Operaciones que el cliente puede solicitar al servidor de INSTA+.
 public enum TipoPeticion {
     LOGIN,
     REGISTRAR,
@@ -23,5 +24,6 @@ public enum TipoPeticion {
     ELIMINAR_CONVERSACION,
     NO_LEIDOS,
     STICKERS_DISPONIBLES,
-    IMPORTAR_STICKER
+    IMPORTAR_STICKER,
+    REACTIVAR
 }

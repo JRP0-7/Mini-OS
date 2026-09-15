@@ -24,12 +24,14 @@ import mini.os.insta.model.UserDTO;
 import mini.os.model.InstaUser;
 import mini.os.model.ListaEnlazada;
 
+// Cliente de red que serializa solicitudes y respuestas de INSTA+.
 public class InstaClient {
 
     private Socket socket;
     private ObjectOutputStream salida;
     private ObjectInputStream entrada;
 
+    // SOCKETS: abre la conexión TCP con el servidor y prepara los streams del protocolo.
     public InstaClient() throws IOException {
         socket = new Socket();
         socket.connect(new InetSocketAddress(InstaServer.PORT), 4000);
@@ -38,11 +40,13 @@ public class InstaClient {
         entrada = new ObjectInputStream(socket.getInputStream());
     }
 
+    // SOCKETS + ARCHIVOS BINARIOS: envía objetos serializados y espera la respuesta del servidor.
     public synchronized Respuesta enviar(TipoPeticion tipo, Object dato) throws IOException {
         salida.writeObject(new Solicitud(tipo, dato));
         salida.flush();
         try {
             return (Respuesta) entrada.readObject();
+        // EXCEPCIONES: convierte los fallos de red o de protocolo en IOException comprensibles para la UI.
         } catch (SocketTimeoutException e) {
             throw new IOException("El servidor no respondio a tiempo", e);
         } catch (ClassNotFoundException e) {
@@ -64,6 +68,15 @@ public class InstaClient {
             if (msg != null && msg.contains("desactivada")) {
                 throw new CuentaDesactivadaException(msg);
             }
+            return null;
+        }
+        return (InstaUser) r.getDato();
+    }
+
+    // Reactiva una cuenta desactivada validando la contraseña; null si el usuario/contraseña no coincide
+    public InstaUser reactivar(String user, String pass) throws IOException {
+        Respuesta r = enviar(TipoPeticion.REACTIVAR, new UserDTO(user, pass));
+        if (!r.isConnected()) {
             return null;
         }
         return (InstaUser) r.getDato();

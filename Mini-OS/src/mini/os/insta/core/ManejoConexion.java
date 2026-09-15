@@ -23,6 +23,7 @@ import mini.os.insta.model.UserDTO;
 import mini.os.model.InstaUser;
 import mini.os.model.ListaEnlazada;
 
+// Atiende en un hilo las solicitudes recibidas por una conexión de INSTA+.
 public class ManejoConexion implements Runnable {
     private Socket socket;
     private String userActual;
@@ -32,6 +33,7 @@ public class ManejoConexion implements Runnable {
         this.socket = cliente;
     }
 
+    // HILOS + SOCKETS: cada instancia procesa de forma aislada las peticiones de un cliente.
     public void run() {
 
 
@@ -229,13 +231,29 @@ public class ManejoConexion implements Runnable {
                         }
                         salida.flush();
                         break;
+                    case REACTIVAR:
+                        UserDTO reDTO = (UserDTO) soli.getDato();
+                        try {
+                            InstaUser reactivado = ServicioInsta.reactivar(reDTO.getUser(), reDTO.getPass());
+                            if (reactivado == null) {
+                                salida.writeObject(new Respuesta(false, "Usuario o contraseña incorrectos", null));
+                            } else {
+                                salida.writeObject(new Respuesta(true, "Cuenta reactivada", reactivado));
+                                userActual = reDTO.getUser();
+                            }
+                        } catch (NoSuchAlgorithmException e) {
+                            salida.writeObject(new Respuesta(false, e.getMessage(), null));
+                        }
+                        salida.flush();
+                        break;
                     default:
-                        salida.writeObject(new Respuesta(false, "Tipo de peticion no soportado", null)); 
+                        salida.writeObject(new Respuesta(false, "Tipo de peticion no soportado", null));
                         salida.flush();
                         break;
                 }
             }
-} catch (ClassNotFoundException | ArchivoCorruptoException | RuntimeException e) {
+    // EXCEPCIONES: informa errores de datos o protocolo sin dejar que fallen silenciosamente.
+    } catch (ClassNotFoundException | ArchivoCorruptoException | RuntimeException e) {
             // Estos errores son de datos/protocolo, el socket sigue vivo: le avisamos al cliente
             try {
                 salida.writeObject(new Respuesta(false, "Error de conexion: " + e.getMessage(), null));
@@ -243,6 +261,7 @@ public class ManejoConexion implements Runnable {
             } catch (IOException e1) {
                 // el cliente ya se desconecto mientras intentabamos responder, no hay nada mas que hacer
             }
+        // SOCKETS + EXCEPCIONES: una desconexión del cliente termina limpiamente este hilo.
         } catch (IOException e) {
             // El cliente cerro la conexion (cerro la app, se cayo la red, etc).
             // No intentamos escribir de vuelta porque el socket ya esta muerto: eso es justo

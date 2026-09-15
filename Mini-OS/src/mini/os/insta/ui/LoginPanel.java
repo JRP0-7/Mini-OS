@@ -30,6 +30,7 @@ import mini.os.error.UsuarioDuplicadoException;
 import mini.os.insta.core.InstaClient;
 import mini.os.model.InstaUser;
 
+// Panel de inicio de sesión y registro de usuarios de INSTA+.
 public class LoginPanel extends JPanel {
 
     private InstaFrame frame;
@@ -248,7 +249,24 @@ public class LoginPanel extends JPanel {
                 frame.abrirSesion(cliente, u.getUser());
             }
         } catch (CuentaDesactivadaException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage());
+            int op = JOptionPane.showConfirmDialog(this,
+                    "Tu cuenta esta desactivada. ¿Deseas reactivarla e iniciar sesión?",
+                    "Cuenta desactivada", JOptionPane.YES_NO_OPTION);
+            if (op == JOptionPane.YES_OPTION) {
+                try {
+                    InstaClient cliente = frame.obtenerCliente();
+                    InstaUser u = cliente.reactivar(user, pass);
+                    if (u == null) {
+                        JOptionPane.showMessageDialog(this, "Usuario o contraseña incorrectos");
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Cuenta reactivada correctamente");
+                        frame.abrirSesion(cliente, u.getUser());
+                    }
+                } catch (IOException ex2) {
+                    JOptionPane.showMessageDialog(this,
+                            "No se pudo conectar con el servidor INSTA+. Abre INSTA+ desde el escritorio.");
+                }
+            }
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(this,
                     "No se pudo conectar con el servidor INSTA+. Abre INSTA+ desde el escritorio.");
