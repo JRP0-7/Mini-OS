@@ -46,12 +46,27 @@ public class UtilInstaUI {
         return new ImageIcon(icono.getImage().getScaledInstance(Math.max(1, ancho), alto, Image.SCALE_SMOOTH));
     }
 
+    // Recorta al centro en cuadrado antes de escalar — si no, las imagenes que no son
+    // cuadradas (la mayoria de stickers/fotos) salen estiradas/deformadas
     public static ImageIcon cargarImagenCuadrada(String ruta, int lado) {
         if (ruta == null) return null;
         File f = new File(ruta);
         if (!f.exists()) return null;
-        ImageIcon icono = new ImageIcon(ruta);
-        return new ImageIcon(icono.getImage().getScaledInstance(lado, lado, Image.SCALE_SMOOTH));
+        try {
+            BufferedImage original = ImageIO.read(f);
+            if (original == null) return null;
+
+            int w = original.getWidth();
+            int h = original.getHeight();
+            int ladoRecorte = Math.min(w, h);
+            int recorteX = (w - ladoRecorte) / 2;
+            int recorteY = (h - ladoRecorte) / 2;
+
+            BufferedImage recortada = original.getSubimage(recorteX, recorteY, ladoRecorte, ladoRecorte);
+            return new ImageIcon(recortada.getScaledInstance(lado, lado, Image.SCALE_SMOOTH));
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     // Recorta al centro en proporcion vertical 4:5 (1080x1350, como pide el doc de specs)
