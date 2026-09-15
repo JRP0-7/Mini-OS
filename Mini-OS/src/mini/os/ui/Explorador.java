@@ -26,7 +26,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
-import javazoom.jlgui.basicplayer.BasicPlayerException;
 import mini.os.audio.ReproductorMusica;
 import mini.os.core.NodoArchivos;
 import mini.os.docs.Editor;
@@ -109,11 +108,28 @@ public class Explorador extends JInternalFrame {
             NodoArchivos nA = (NodoArchivos) seleccion.getUserObject();
             File destino = nA.getArchivo();
             String res = JOptionPane.showInputDialog(renombrar, "Ingrese el nuevo nombre del elemento");
-            if (res == null || res.isEmpty()) {
+            if (res == null || res.trim().isEmpty()) {
                 return;
             }
+            res = res.trim();
 
-            destino.renameTo(new File(destino.getParent(), res));
+            if (destino.isFile()) {
+                int punto = destino.getName().lastIndexOf(".");
+                if (punto != -1 && !res.contains(".")) {
+                    res = res + destino.getName().substring(punto);
+                }
+            }
+
+            File nuevo = new File(destino.getParent(), res);
+            if (nuevo.exists()) {
+                JOptionPane.showMessageDialog(this, "Ya existe un elemento con ese nombre", "Error al renombrar",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (!destino.renameTo(nuevo)) {
+                JOptionPane.showMessageDialog(this, "No se pudo renombrar el elemento", "Error al renombrar",
+                        JOptionPane.ERROR_MESSAGE);
+            }
 
             recargarArbol(arbol, raiz);
         });
@@ -166,7 +182,8 @@ public class Explorador extends JInternalFrame {
             try {
                 copiar(archivoCopiado, destino);
             } catch (IOException e1) {
-                e1.printStackTrace();
+                JOptionPane.showMessageDialog(this, "No se pudo copiar: " + e1.getMessage(), "Error al copiar",
+                        JOptionPane.ERROR_MESSAGE);
             }
 
             recargarArbol(arbol, raiz);
@@ -203,7 +220,7 @@ public class Explorador extends JInternalFrame {
                 NodoArchivos na = (NodoArchivos) seleccion.getUserObject();
                 File archivo = na.getArchivo();
                 String nombre = archivo.getName().toLowerCase();
-                if (!nombre.endsWith(".txt")) {
+                if (!nombre.endsWith(".edt") && !nombre.endsWith(".txt")) {
                     JOptionPane.showMessageDialog(this, "No se pudo abrir el archivo", "Error",
                             JOptionPane.ERROR_MESSAGE);
                     return;
@@ -229,8 +246,9 @@ public class Explorador extends JInternalFrame {
             try {
                 ReproductorMusica rep = new ReproductorMusica(archivo.getParentFile());
                 abrir(rep, escritorio);
-            } catch (IOException | BasicPlayerException ex) {
-                ex.printStackTrace();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "No se pudo abrir el reproductor", "Error",
+                        JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -478,7 +496,8 @@ public class Explorador extends JInternalFrame {
                             destino.mkdir();
                         }
                         try {
-                            Files.move(hijo2.toPath(), new File(destino, hijo2.getName()).toPath());
+                            Files.move(hijo2.toPath(), new File(destino, hijo2.getName()).toPath(),
+                                    StandardCopyOption.REPLACE_EXISTING);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -523,6 +542,11 @@ public class Explorador extends JInternalFrame {
     // Copia un archivo o una carpeta (con todo su contenido) dentro de destino
     private void copiar(File origen, File destino) throws IOException {
         if (origen.isDirectory()) {
+            String rutaOrigen = origen.getCanonicalPath();
+            String rutaDestino = destino.getCanonicalPath();
+            if (rutaDestino.equals(rutaOrigen) || rutaDestino.startsWith(rutaOrigen + File.separator)) {
+                throw new IOException("No se puede copiar una carpeta dentro de si misma");
+            }
             File destinoCarpeta = new File(destino, origen.getName());
             if (!destinoCarpeta.exists()) {
                 destinoCarpeta.mkdirs();

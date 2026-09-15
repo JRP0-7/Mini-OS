@@ -156,7 +156,7 @@ public class MainPanel extends JPanel {
                         SwingUtilities.invokeLater(() -> lblNoti.setText("Mensajes nuevos: " + n + "  — revisa tu Inbox"));
                     }
                 } catch (Exception e) {
-                    detener = true;
+                    SwingUtilities.invokeLater(() -> lblNoti.setText("Sin conexion al servidor..."));
                 }
             }
         });

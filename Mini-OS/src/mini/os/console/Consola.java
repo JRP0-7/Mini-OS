@@ -6,20 +6,21 @@ import java.util.Date;
 
 public class Consola {
 
-    private static boolean modoEscritura = false;
-    private static String archivoDestino = null;
-    private static boolean modoAppend = false;
-    private static StringBuilder buffer = new StringBuilder();
+    private boolean modoEscritura = false;
+    private String archivoDestino = null;
+    private boolean modoAppend = false;
+    private final StringBuilder buffer = new StringBuilder();
 
     public static ConsoleGUI abrir(File raizUser) {
         ConsoleGUI gui = new ConsoleGUI();
         ManejoFile archivos = new ManejoFile(raizUser);
+        Consola consola = new Consola();
         gui.setRutaActual(archivos.ubicacionActual());
-        gui.setComandoListener(comando -> procesarComando(comando, gui, archivos));
+        gui.setComandoListener(comando -> consola.procesarComando(comando, gui, archivos));
         return gui;
     }
 
-    private static void procesarComando(String entrada, ConsoleGUI gui,
+    private void procesarComando(String entrada, ConsoleGUI gui,
             ManejoFile archivos) {
         String comandoCompleto = entrada.trim();
 

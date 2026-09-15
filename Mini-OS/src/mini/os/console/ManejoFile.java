@@ -98,6 +98,16 @@ public class ManejoFile {
             return "Error con la ruta brindada";
         }
 
+        try {
+            String rutaDestino = destino.getCanonicalPath();
+            String rutaActual = carpetaActual.getCanonicalPath();
+            if (rutaActual.startsWith(rutaDestino + File.separator)) {
+                return "No se puede eliminar una carpeta que contiene la carpeta actual";
+            }
+        } catch (IOException e) {
+            return "Error con la ruta brindada";
+        }
+
         if (borrarTodo(destino)) {
             return nombre + " eliminado correctamente";
         } else {

@@ -11,18 +11,22 @@ public class CatalogoMusical {
     int LRuta = 100;
     int tamañoR =(LNombre + LDescripcion + LRuta)*2;
     private RandomAccessFile mReg;
+    private boolean ok = false;
 
     public CatalogoMusical(File carpeta){
         try{
-            
+            carpeta.mkdirs();
             mReg = new RandomAccessFile(carpeta.getCanonicalPath()+ "/catalogo.msc", "rw"); 
+            ok = true;
         }
         catch (IOException e){
+            ok = false;
             e.printStackTrace();
         }
     }
 
     public void guardar(int indice, String nombre, String descripcion, String RImagen) throws IOException{
+        if (!ok) return;
         mReg.seek(indice*tamañoR);
 
         mReg.writeChars(ajustarTamaño(nombre, LNombre));
@@ -31,6 +35,7 @@ public class CatalogoMusical {
     }
 
     public InfoCancion leer(int indice) throws IOException{
+        if (!ok) return null;
         String nombre = "";
         String descripcion ="";
         String rimagen="";
@@ -52,6 +57,7 @@ public class CatalogoMusical {
     }
 
     public boolean existeReg(int indice) throws IOException{
+        if (!ok) return false;
         long pos = (indice+1) * tamañoR;
         return mReg.length()>=pos;
 
@@ -71,6 +77,7 @@ public class CatalogoMusical {
     }
 
     public InfoCancion buscarNombre(String nombre) throws IOException{
+        if (!ok) return null;
         long tamaño = mReg.length()/tamañoR;
         for (int i = 0; i < tamaño; i++) {
             InfoCancion valor = leer(i);
@@ -82,6 +89,7 @@ public class CatalogoMusical {
     }
 
     public int buscarRegistro(String nombre) throws IOException{
+        if (!ok) return -1;
         long tamaño = mReg.length()/tamañoR;
         for (int i = 0; i < tamaño; i++) {
             if (leer(i).getNombre().equals(nombre)) {
@@ -92,6 +100,7 @@ public class CatalogoMusical {
     }
 
     public int tRegistros() throws IOException{
+        if (!ok) return 0;
         return (int) (mReg.length()/tamañoR);
     }
 

@@ -29,6 +29,7 @@ public class InstaServer {
         servidorActivo = true;
         Thread hilo = new Thread(() -> {
             try (ServerSocket server = new ServerSocket(PORT)) {
+                servidorActivo = true;
                 System.out.println("Servidor INSTA+ escuchando en puerto " + PORT);
                 while (true) {
                     Socket cliente = server.accept();
@@ -36,6 +37,7 @@ public class InstaServer {
                     new Thread(manejo).start();
                 }
             } catch (IOException e) {
+                servidorActivo = false;
                 System.out.println("Servidor INSTA+ no disponible: " + e.getMessage());
             }
         });

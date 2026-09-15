@@ -33,7 +33,8 @@ public class Sistema {
         }
         
         File adminF = new File(ROOT + "/admin");
-        if(!adminF.exists()){
+        File adminXr = new File(adminF, "admin.xr");
+        if(!adminF.exists() || !adminXr.exists()){
             adminF.mkdirs();
             new File(adminF, "Mis Documentos").mkdirs();
             new File(adminF, "Música").mkdirs();
@@ -44,7 +45,9 @@ public class Sistema {
             } catch (NoSuchAlgorithmException e) {
                 e.printStackTrace();
             }
-            ArchivoUtil.guardar(su, adminF.getPath() + "/admin.xr");
+            if (su != null) {
+                ArchivoUtil.guardar(su, adminXr.getPath());
+            }
         }
 
         File userF= new File(ROOT + "/users.xr");

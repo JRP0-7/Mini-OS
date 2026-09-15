@@ -23,11 +23,9 @@ import mini.os.insta.model.Publicacion;
 
 public class UtilInstaUI {
 
-    private static final SimpleDateFormat FMT = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-
     public static String fecha(Date d) {
         if (d == null) return "";
-        return FMT.format(d);
+        return new SimpleDateFormat("dd/MM/yyyy HH:mm").format(d);
     }
 
     public static String fechaSolo(Date d) {

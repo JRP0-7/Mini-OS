@@ -18,7 +18,9 @@ import javax.swing.undo.UndoManager;
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import mini.os.docs.persistencia.Documento;
 import mini.os.docs.persistencia.EdtException;
@@ -133,6 +135,7 @@ public class EditorTexto extends JInternalFrame {
     private void accionNuevo() {
         textPane.setText("");
         archivoActual = null;
+        gestorDeshacer.discardAllEdits();
         setTitle("Bloc de Notas");
     }
 
@@ -152,6 +155,10 @@ public class EditorTexto extends JInternalFrame {
 
     private void abrirEDT(File archivo) {
         try {
+            if (!archivo.getName().toLowerCase().endsWith(".edt")) {
+                abrirTextoPlano(archivo);
+                return;
+            }
             Documento documento = PersistenciaEDT.abrir(archivo);
 
             PersistenciaEDT.aplicarA(documento, textPane.getStyledDocument());
@@ -169,6 +176,7 @@ public class EditorTexto extends JInternalFrame {
             gestorTablas.aplicar(tablas, textPane);
 
             archivoActual = archivo;
+            gestorDeshacer.discardAllEdits();
             setTitle("Bloc de Notas - " + archivo.getName());
         } catch (EdtException | BadLocationException | IOException e) {
             JOptionPane.showMessageDialog(this, e.getMessage(),
@@ -178,12 +186,31 @@ public class EditorTexto extends JInternalFrame {
 
     public void abrirDirecto(File select) {
         if (select != null) {
+            if (!URLValido(select)) {
+                JOptionPane.showMessageDialog(this, "No se pueden abrir archivos de afuera del entorno",
+                        "Error de Apertura", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             abrirEDT(select);
         }
     }
 
+    private void abrirTextoPlano(File archivo) throws IOException {
+        StringBuilder contenido = new StringBuilder();
+        try (BufferedReader br = new BufferedReader(new FileReader(archivo))) {
+            int c;
+            while ((c = br.read()) != -1) {
+                contenido.append((char) c);
+            }
+        }
+        textPane.setText(contenido.toString());
+        gestorDeshacer.discardAllEdits();
+        setTitle("Bloc de Notas - " + archivo.getName() + " (texto plano)");
+        archivoActual = null;
+    }
+
     private void accionGuardar() {
-        if (archivoActual == null) {
+        if (archivoActual == null || !archivoActual.getName().toLowerCase().endsWith(".edt")) {
             accionGuardarComo();
         } else {
             guardarEn(archivoActual);
@@ -197,9 +224,13 @@ public class EditorTexto extends JInternalFrame {
         }
         File archivo = selector.getSelectedFile();
 
+        if (archivo.getParentFile() == null) {
+            archivo = new File(carpetaOrigen, archivo.getName());
+        }
+
         String nombre = archivo.getName().toLowerCase();
-        if (!nombre.endsWith(".txt")) {
-            archivo = new File(archivo.getParentFile(), archivo.getName() + ".txt");
+        if (!nombre.endsWith(".edt")) {
+            archivo = new File(archivo.getParentFile(), archivo.getName() + ".edt");
         }
 
         if (!URLValido(archivo)) {
@@ -263,24 +294,22 @@ public class EditorTexto extends JInternalFrame {
             }
         });
         selector.setCurrentDirectory(carpetaOrigen);
-        selector.setFileFilter(new FileNameExtensionFilter("Documento del editor (*.txt)", "txt"));
+        selector.addChoosableFileFilter(new FileNameExtensionFilter("Documento del editor (*.edt)", "edt"));
+        selector.setFileFilter(new FileNameExtensionFilter("Documento del editor (*.edt)", "edt"));
         return selector;
     }
 
     private void aplicarFuente(String nombreFuente) {
         int inicio = textPane.getSelectionStart();
         int fin = textPane.getSelectionEnd();
-        if (inicio == fin) {
-            StyledDocument documento = textPane.getStyledDocument();
-            SimpleAttributeSet atributos = new SimpleAttributeSet();
-            StyleConstants.setFontFamily(atributos, nombreFuente);
-            documento.setCharacterAttributes(inicio, 1, atributos, false);
-            return;
-        }
         StyledDocument documento = textPane.getStyledDocument();
         SimpleAttributeSet atributos = new SimpleAttributeSet();
         StyleConstants.setFontFamily(atributos, nombreFuente);
-        documento.setCharacterAttributes(inicio, fin - inicio, atributos, false);
+        if (inicio != fin) {
+            documento.setCharacterAttributes(inicio, fin - inicio, atributos, false);
+        } else {
+            textPane.setCharacterAttributes(atributos, false);
+        }
     }
 
     private void aplicarTamano(int tamano) {

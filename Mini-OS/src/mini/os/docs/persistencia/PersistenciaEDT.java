@@ -129,8 +129,8 @@ public class PersistenciaEDT {
                     int posicion = rEdt.readInt();
                     int filas = rEdt.readInt();
                     int columnas = rEdt.readInt();
-                    if (posicion < 0 || filas <= 0 || columnas <= 0) {
-                        throw new EdtException.ArchivoCorrupto("tabla con datos invalidos");
+                    if (posicion < 0 || filas <= 0 || columnas <= 0 || filas > 100 || columnas > 50) {
+                        throw new EdtException.ArchivoCorrupto("tabla con dimensiones invalidas");
                     }
                     Tabla tabla = new Tabla(filas, columnas);
                     tabla.setPosicion(posicion);
