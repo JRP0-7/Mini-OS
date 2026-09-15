@@ -235,7 +235,7 @@ public class ManejoConexion implements Runnable {
                         break;
                 }
             }
-        } catch (ClassNotFoundException | ArchivoCorruptoException e) {
+} catch (ClassNotFoundException | ArchivoCorruptoException | RuntimeException e) {
             // Estos errores son de datos/protocolo, el socket sigue vivo: le avisamos al cliente
             try {
                 salida.writeObject(new Respuesta(false, "Error de conexion: " + e.getMessage(), null));

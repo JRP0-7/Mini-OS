@@ -3,7 +3,9 @@ package mini.os.insta.core;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 import mini.os.error.CuentaDesactivadaException;
 import mini.os.error.UsuarioDuplicadoException;
@@ -29,7 +31,9 @@ public class InstaClient {
     private ObjectInputStream entrada;
 
     public InstaClient() throws IOException {
-        socket = new Socket("localhost", InstaServer.PORT);
+        socket = new Socket();
+        socket.connect(new InetSocketAddress(InstaServer.PORT), 4000);
+        socket.setSoTimeout(10000);
         salida = new ObjectOutputStream(socket.getOutputStream());
         entrada = new ObjectInputStream(socket.getInputStream());
     }
@@ -39,6 +43,8 @@ public class InstaClient {
         salida.flush();
         try {
             return (Respuesta) entrada.readObject();
+        } catch (SocketTimeoutException e) {
+            throw new IOException("El servidor no respondio a tiempo", e);
         } catch (ClassNotFoundException e) {
             throw new IOException("Protocolo invalido", e);
         }

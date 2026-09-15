@@ -67,7 +67,8 @@ public class Escritorio extends JFrame{
             File FolderUser = new File(Sistema.ROOT + "/" + usuario.getUser()+ "/Música");
             try {
                 abrir(new ReproductorMusica(FolderUser));
-            } catch (IOException | BasicPlayerException e1) {
+            } catch (Exception e1) {
+                JOptionPane.showMessageDialog(this, "No se pudo abrir el reproductor de música:\n" + e1.getMessage());
                 e1.printStackTrace();
             }
         });

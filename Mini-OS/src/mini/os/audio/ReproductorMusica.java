@@ -52,7 +52,7 @@ public class ReproductorMusica extends JInternalFrame {
     String[] clasificacionImg = { "jpg", "jpeg", "png" };
     ArrayList<File> portadas = new ArrayList<>();
 
-    public ReproductorMusica(File raiz) throws IOException, BasicPlayerException {
+    public ReproductorMusica(File raiz) {
         super("Reproductor de Música", true, true, true, true);
         setSize(800, 700);
         addInternalFrameListener(new InternalFrameAdapter() {
@@ -68,7 +68,11 @@ public class ReproductorMusica extends JInternalFrame {
         this.raiz = raiz;
 
         cm = new CatalogoMusical(raiz);
-        refresh();
+        try {
+            refresh();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         GradientPanel fondo = new GradientPanel("#E4EAF0", "#B7C6D6");
         fondo.setLayout(new BorderLayout());
@@ -365,7 +369,9 @@ public class ReproductorMusica extends JInternalFrame {
         portadas.clear();
 
         filtrar(raiz);
-        filtrarPortadas(new File(raiz.getParentFile(), "Mis Imágenes/Portadas"));
+        if (raiz.getParentFile() != null) {
+            filtrarPortadas(new File(raiz.getParentFile(), "Mis Imágenes/Portadas"));
+        }
         cargarInfo();
         llenarLista();
 

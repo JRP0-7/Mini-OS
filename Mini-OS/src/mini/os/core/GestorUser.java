@@ -12,15 +12,42 @@ import mini.os.model.SystemUser;
 
 // Esta clase se encarga de crear usuarios y manejar el login
 public class GestorUser {
-    // Crea un usuario nuevo, le hace sus carpetas y guarda los datos
-    public static void crearUser(String user, String pass, boolean admin)
-            throws UsuarioDuplicadoException, NoSuchAlgorithmException, ArchivoCorruptoException {
+    public static boolean nombreValido(String user) {
+        if (user == null || user.isEmpty()) {
+            return false;
+        }
+        if (user.equals(".") || user.equals("..")) {
+            return false;
+        }
+        for (char c : user.toCharArray()) {
+            if (c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' || c == '"' || c == '<' || c == '>'
+                    || c == '|') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static ListaEnlazada<String> usuariosRegistrados() throws ArchivoCorruptoException {
         ListaEnlazada<String> lista = ArchivoUtil.leer(Sistema.ROOT + "/users.xr");
+        return lista == null ? new ListaEnlazada<>() : lista;
+    }
+
+    // Crea un usuario nuevo, le hace sus carpetas y guarda los datos
+public static void crearUser(String user, String pass, boolean admin)
+            throws UsuarioDuplicadoException, NoSuchAlgorithmException, ArchivoCorruptoException {
+        user = user == null ? "" : user.trim();
+        if (!nombreValido(user)) {
+            throw new UsuarioDuplicadoException("El nombre de usuario es invalido o contiene caracteres prohibidos");
+        }
+        ListaEnlazada<String> lista = usuariosRegistrados();
         if (lista.contiene(user)) {
             throw new UsuarioDuplicadoException("El usuario " + user + " ya existe");
         }
         File UserFolder = new File(Sistema.ROOT + "/" + user);
-        UserFolder.mkdirs();
+        if (!UserFolder.exists() && !UserFolder.mkdirs()) {
+            throw new ArchivoCorruptoException("No se pudo crear la carpeta del usuario");
+        }
 
         new File(UserFolder, "Mis Documentos").mkdirs();
         new File(UserFolder, "Música").mkdirs();
@@ -37,6 +64,10 @@ public class GestorUser {
 
     // Verifica si el usuario y la contraseña son correctos para entrar
     public static SystemUser login(String user, String pass) throws NoSuchAlgorithmException, ArchivoCorruptoException {
+        user = user == null ? "" : user.trim();
+        if (!nombreValido(user)) {
+            return null;
+        }
         File folder = new File(Sistema.ROOT + "/" + user);
         String[] carpetas = { "Mis Documentos", "Música", "Mis Imágenes", "Mis Imágenes/Portadas" };
 
@@ -47,7 +78,10 @@ public class GestorUser {
             new File(folder, string).mkdirs();
         }
 
-        SystemUser su = ArchivoUtil.leer(folder.getPath() + "/" + user + ".xr");
+SystemUser su = ArchivoUtil.leer(folder.getPath() + "/" + user + ".xr");
+        if (su == null) {
+            return null;
+        }
         if (su.getPassword().equals(Autentificacion.hash(pass))) {
             System.out.println("Inicio Sesion correcto");
             return su;
@@ -57,8 +91,8 @@ public class GestorUser {
         }
     }
 
-    public static ListaEnlazada<String> listarUsuarios() throws ArchivoCorruptoException {
-        return ArchivoUtil.leer(Sistema.ROOT + "/users.xr");
+public static ListaEnlazada<String> listarUsuarios() throws ArchivoCorruptoException {
+        return usuariosRegistrados();
     }
 
     public static SystemUser buscarUsuario(String user) throws ArchivoCorruptoException{
@@ -76,7 +110,7 @@ public class GestorUser {
             return;
 
         borrarTodo(folder);
-        ListaEnlazada<String> lista = ArchivoUtil.leer(Sistema.ROOT + "/users.xr");
+        ListaEnlazada<String> lista = usuariosRegistrados();
         lista.eliminar(user);
         ArchivoUtil.guardar(lista, Sistema.ROOT + "/users.xr");
     }
